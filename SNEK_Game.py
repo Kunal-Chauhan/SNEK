@@ -243,6 +243,7 @@ def main():
                 text_on_screen("Game Over! Your Score: " +
                                str(len(s.body)), white, 100, 200)
                 pygame.display.update()
+                pygame.mixer.music.play()
                 print('Score: ', len(s.body))
                 for event in pygame.event.get():
                     if event.type == pygame.KEYDOWN:
