@@ -52,7 +52,7 @@ def welcome():
     exit_game = False
 
     # loading and playing music
-    pygame.mixer.music.load('progressivehouse2.mp3')
+    pygame.mixer.music.load('progressivehouse2.ogg')
     pygame.mixer.music.play()
 
     # welcome screen loop
@@ -94,7 +94,7 @@ def Game_loop():
     snk_list = []
     snk_length = 1
     # loading music for gameover
-    pygame.mixer.music.load('Popsoundeffectbottle.mp3')
+    pygame.mixer.music.load('Popsoundeffectbottle.ogg')
 
     # checking that,does file for saving highscore exist on PC or not
     if(not os.path.exists("Highscore.txt")):
