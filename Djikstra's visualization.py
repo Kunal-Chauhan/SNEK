@@ -5,6 +5,12 @@ import math
 from collections import deque
 from tkinter import messagebox, Tk
 
+# Colours
+red = (238, 111, 87)
+white = (255, 203, 203)
+black = (0, 51, 78)
+light_blue = (187, 225, 250)
+
 size = (width, height) = 700, 700
 pygame.init()
 
@@ -133,22 +139,22 @@ def main():
                 else:
                     continue
 
-        win.fill((0, 20, 20))
+        win.fill((255, 255, 255))
         for i in range(cols):
             for j in range(rows):
                 spot = grid[i][j]
-                spot.show(win, (44, 62, 80))
+                spot.show(win, white)
                 if spot in path:
-                    spot.show(win, (192, 57, 43))
+                    spot.show(win, light_blue)
                 elif spot.visited:
                     spot.show(win, (39, 174, 96))
                 if spot in queue:
                     spot.show(win, (44, 62, 80))
-                    spot.show(win, (39, 174, 96), 0)
+                    spot.show(win, black, 0)
                 if spot == start:
-                    spot.show(win, (0, 255, 200))
+                    spot.show(win, black)
                 if spot == end:
-                    spot.show(win, (0, 120, 255))
+                    spot.show(win, red)
 
         pygame.display.flip()
 
