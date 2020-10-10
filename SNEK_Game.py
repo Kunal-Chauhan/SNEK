@@ -93,8 +93,6 @@ def welcome():
                     main()
 
         pygame.display.update()
-        # should be changed to 30 or 60
-        clock.tick(60)
 
 
 def main():
@@ -107,7 +105,6 @@ def main():
     flag = True
 
     while flag:
-        pygame.time.delay(50)
         clock.tick(10)
 
         snek.move()
@@ -131,7 +128,7 @@ def main():
                         if event.key == K_RETURN:
                             main()
 
-                # message_box('You Lost!', 'Play again...')
+                message_box('You Lost!', 'Play again...')
 
                 snek.reset((10, 10))
                 break
