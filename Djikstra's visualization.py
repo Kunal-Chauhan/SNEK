@@ -81,8 +81,8 @@ for i in range(cols):
         grid[i][j].add_neighbors(grid)
 
 
-start = grid[cols//2][rows//2]
-end = grid[cols-15][rows - 15]
+start = grid[0][0]
+end = grid[cols//2][rows//2]
 start.wall = False
 end.wall = False
 
