@@ -1,17 +1,17 @@
 from algorithms import *
-from Grid import Grid
-from comparisonConstants import *
+from Elements import Grid
+from constants import *
 
 
 pygame.init()
 
-win = pygame.display.set_mode(size)
+win = pygame.display.set_mode(SIZE)
 pygame.display.set_caption("DFS's Visual")
 clock = pygame.time.Clock()
 
 
 def main():
-    grid = Grid(win, (0, 0), (rows // 2, cols // 2))
+    grid = Grid(win, (0, 0), (ROWS // 2, COLUMNS // 2))
 
     while True:
         for event in pygame.event.get():
@@ -26,7 +26,7 @@ def main():
             if event.type == KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     aStar(grid)
-                    grid.newGrid((0, 0), (rows // 2, cols // 2))
+                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
 
         grid.visualise()
 

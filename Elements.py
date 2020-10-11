@@ -8,7 +8,7 @@ class Cube:
     rows = ROWS
     w = WIDTH
 
-    def __init__(self, start, dirX=1, dirY=0, cubeColor=BLUE):
+    def __init__(self, start, dirX=1, dirY=0, cubeColor=DARK_BLUE):
         self.pos = start
         self.dirX = dirX
         self.dirY = dirY
@@ -123,3 +123,113 @@ class Snake:
 
         for c in self.body[1:]:
             c.draw(surface)
+
+
+class Spot:
+    def __init__(self, position):
+        self.x, self.y = position
+        self.f, self.g, self.h = 0, 0, 0
+        self.neighbors = []
+        self.prev = None
+        self.wall = False
+        self.visited = False
+
+    @property
+    def position(self):
+        return self.x, self.y
+
+    def show(self, win, clr, shape=1):
+        if self.wall:
+            clr = BLACK
+        if shape == 1:
+            pygame.draw.rect(win, clr, (self.x * W, self.y * H, W - 1, H - 1))
+        else:
+            pygame.draw.circle(win, clr, (self.x * W + W // 2, self.y * H + H // 2), W // 3)
+
+    def add_neighbors(self, grid):
+        if self.x < COLUMNS - 1:
+            self.neighbors.append(grid[self.x + 1][self.y])
+        if self.x > 0:
+            self.neighbors.append(grid[self.x - 1][self.y])
+        if self.y < ROWS - 1:
+            self.neighbors.append(grid[self.x][self.y + 1])
+        if self.y > 0:
+            self.neighbors.append(grid[self.x][self.y - 1])
+        # Add Diagonals
+        # if self.x < COLUMNS - 1 and self.y < ROWS - 1:
+        #     self.neighbors.append(grid[self.x + 1][self.y + 1])
+        # if self.x < COLUMNS - 1 and self.y > 0:
+        #     self.neighbors.append(grid[self.x + 1][self.y - 1])
+        # if self.x > 0 and self.y < ROWS - 1:
+        #     self.neighbors.append(grid[self.x - 1][self.y + 1])
+        # if self.x > 0 and self.y > 0:
+        #     self.neighbors.append(grid[self.x - 1][self.y - 1])
+
+
+class Grid:
+    def __init__(self, window, start, end):
+        self.win = window
+
+        self.queue = []  # set of open nodes
+        self.visited = []  # set of visited nodes
+        self.path = []  # shortest path nodes
+        self.grid = []  # all nodes in the grid
+
+        self.start = self.end = None
+
+        self.newGrid(start, end)
+
+    def newGrid(self, start, end):
+        queue = self.queue = []
+        grid = self.grid = []
+        self.visited = []
+        self.path = []
+
+        for i in range(COLUMNS):
+            arr = []
+            for j in range(ROWS):
+                arr.append(Spot((i, j)))
+            self.grid.append(arr)
+
+        for i in range(COLUMNS):
+            for j in range(ROWS):
+                grid[i][j].add_neighbors(grid)
+
+        startX, startY = start
+        endX, endY = end
+
+        self.start = grid[startX][startY]
+        self.end = grid[endX][endY]
+
+        self.start.visited = True
+
+        queue.append(self.start)
+
+    def visualise(self):
+        self.win.fill(WHITE)
+        start = self.start
+        end = self.end
+
+        for i in range(COLUMNS):
+            for j in range(ROWS):
+                spot = self.grid[i][j]
+                spot.show(self.win, PINK)
+
+                if spot in self.path:
+                    spot.show(self.win, LIGHT_BLUE)
+                elif spot.visited:
+                    spot.show(self.win, GREEN)
+                if spot in self.queue:
+                    spot.show(self.win, BLUE)
+                    spot.show(self.win, DARK_BLUE, 0)
+
+                # start and end point
+                start.show(self.win, DARK_BLUE)
+                end.show(self.win, RED)
+
+        pygame.display.flip()
+
+    def clickWall(self, pos, state):
+        i = pos[0] // W
+        j = pos[1] // H
+        self.grid[i][j].wall = state

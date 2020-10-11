@@ -81,8 +81,8 @@ def welcome():
     # welcome screen loop
     while True:
         win.fill(PINK)
-        text_on_screen("Welcome to SNEK", BLUE, 185, 200)
-        text_on_screen("Press Spacebar To Play", BLUE, 140, 500)
+        text_on_screen("Welcome to SNEK", DARK_BLUE, 185, 200)
+        text_on_screen("Press Spacebar To Play", DARK_BLUE, 140, 500)
         # tracking events
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -98,7 +98,7 @@ def welcome():
 def main():
     global snek, snack
 
-    snek = Snake(BLUE, (10, 10))
+    snek = Snake(DARK_BLUE, (10, 10))
     snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
 
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
@@ -115,7 +115,7 @@ def main():
 
         for x in range(len(snek.body)):
             if snek.body[x].pos in list(map(lambda z: z.pos, snek.body[x + 1:])):
-                win.fill(BLUE)
+                win.fill(DARK_BLUE)
 
                 text_on_screen("Game Over! Your Score: " + str(len(snek.body)), PINK, 100, 200)
                 pygame.display.update()
@@ -128,7 +128,8 @@ def main():
                         if event.key == K_RETURN:
                             main()
 
-                message_box('You Lost!', 'Play again...')
+                # message_box('You Lost!', 'Play again...')
+                print("You LOST!")
 
                 snek.reset((10, 10))
                 break

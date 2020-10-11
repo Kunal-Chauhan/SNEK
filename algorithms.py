@@ -97,8 +97,8 @@ def aStar(G):
                     queue.append(neighbor)
 
                 if newPath:
-                    neighbor.h = heuristics(neighbor, end)
-                    neighbor.f = neighbor.g + neighbor.h
+                    neighbor.H = heuristics(neighbor, end)
+                    neighbor.f = neighbor.g + neighbor.H
                     neighbor.prev = current
 
         else:
