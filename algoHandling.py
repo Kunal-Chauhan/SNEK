@@ -24,7 +24,13 @@ def main():
                 if pygame.mouse.get_pressed()[2]:
                     grid.clickWall(pygame.mouse.get_pos(), False)
             if event.type == KEYDOWN:
-                if event.key == pygame.K_RETURN:
+                if event.key == K_b:
+                    DFS_BFS(grid, BFS)
+                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                elif event.key == K_d:
+                    DFS_BFS(grid, DFS)
+                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                elif event.key == K_a:
                     aStar(grid)
                     grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
 

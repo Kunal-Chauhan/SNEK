@@ -4,7 +4,7 @@ from pygame.locals import *
 from tkinter import messagebox, Tk
 
 
-def DFS(G):
+def DFS_BFS(G, index):
     queue = G.queue
     path = G.path
     end = G.end
@@ -15,7 +15,7 @@ def DFS(G):
             sys.exit()
 
         if len(queue) > 0:
-            current = queue.pop(0)
+            current = queue.pop(-index)
 
             if current == end:
                 temp = current

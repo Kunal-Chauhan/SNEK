@@ -16,3 +16,7 @@ COLUMNS, ROWS = 20, 20
 
 W = WIDTH // COLUMNS
 H = HEIGHT // ROWS
+
+# Algorithm Selection
+DFS = 1
+BFS = 0
