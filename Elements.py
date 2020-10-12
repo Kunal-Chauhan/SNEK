@@ -14,6 +14,14 @@ class Cube:
         self.dirY = dirY
         self.color = cubeColor
 
+    @property
+    def x(self):
+        return self.pos[0]
+
+    @property
+    def y(self):
+        return self.pos[1]
+
     def move(self, dirX, dirY):
         self.dirX = dirX
         self.dirY = dirY
@@ -48,32 +56,39 @@ class Snake:
         self.dirX = 0
         self.dirY = 1
 
+    def __iter__(self):
+        try:
+            return iter(tuple(cube.pos for cube in self.body[1:]))
+        except IndexError:
+            pass
+
     def move(self):
         if pygame.event.get(QUIT):
             pygame.quit()
             sys.exit()
 
-        keys = pygame.key.get_pressed()
+        if pygame.event.get(KEYDOWN):
+            keys = pygame.key.get_pressed()
 
-        if keys[K_LEFT]:
-            self.dirX = -1
-            self.dirY = 0
-            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+            if keys[K_LEFT]:
+                self.dirX = -1
+                self.dirY = 0
+                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_RIGHT]:
-            self.dirX = 1
-            self.dirY = 0
-            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+            elif keys[K_RIGHT]:
+                self.dirX = 1
+                self.dirY = 0
+                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_UP]:
-            self.dirX = 0
-            self.dirY = -1
-            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+            elif keys[K_UP]:
+                self.dirX = 0
+                self.dirY = -1
+                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_DOWN]:
-            self.dirX = 0
-            self.dirY = 1
-            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+            elif keys[K_DOWN]:
+                self.dirX = 0
+                self.dirY = 1
+                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
         for i, c in enumerate(self.body):
             p = c.pos[:]
@@ -93,6 +108,26 @@ class Snake:
                     c.pos = (c.pos[0], c.rows-1)
                 else:
                     c.move(c.dirX, c.dirY)
+
+    def moveTo(self, point):
+        if pygame.event.get(QUIT):
+            pygame.quit()
+            sys.exit()
+
+        x, y = point
+        dirX = self.dirX = x - self.head.x
+        dirY = self.dirY = y - self.head.y
+        self.turns[self.head.pos[:]] = [dirX, dirY]
+
+        for i, c in enumerate(self.body):
+            p = c.pos[:]
+            if p in self.turns:
+                turn = self.turns[p]
+                c.move(*turn)
+                if i == len(self.body)-1:
+                    self.turns.pop(p)
+            else:
+                c.move(c.dirX, c.dirY)
 
     def reset(self, pos):
         self.head = Cube(pos)
@@ -165,6 +200,14 @@ class Spot:
         # if self.x > 0 and self.y > 0:
         #     self.neighbors.append(grid[self.x - 1][self.y - 1])
 
+    def reset(self, retainWalls=False):
+        self.f, self.g, self.h = 0, 0, 0
+        self.prev = None
+        self.visited = False
+
+        if not retainWalls:
+            self.wall = False
+
 
 class Grid:
     def __init__(self, window, start, end):
@@ -174,6 +217,8 @@ class Grid:
         self.visited = []  # set of visited nodes
         self.path = []  # shortest path nodes
         self.grid = []  # all nodes in the grid
+        self.snakeBody = []  # for making snake body as walls in CPU mode
+        self.walls = []     # spots with infinite weight
 
         self.start = self.end = None
 
@@ -205,6 +250,28 @@ class Grid:
 
         queue.append(self.start)
 
+    def reset(self, start, end, obstacles=None):
+        self.visited = []
+        self.path = []
+        self.queue = []
+        self.snakeBody = []
+
+        for i in range(COLUMNS):
+            for j in range(ROWS):
+                self.grid[i][j].reset(retainWalls=True)
+
+        startX, startY = start
+        endX, endY = end
+
+        self.start = self.grid[startX][startY]
+        self.end = self.grid[endX][endY]
+
+        if obstacles:
+            self.snakeBody = obstacles
+
+        self.end.visited = False
+        self.queue.append(self.start)
+
     def visualise(self):
         self.win.fill(WHITE)
         start = self.start
@@ -233,3 +300,4 @@ class Grid:
         i = pos[0] // W
         j = pos[1] // H
         self.grid[i][j].wall = state
+        self.walls.append((i, j))

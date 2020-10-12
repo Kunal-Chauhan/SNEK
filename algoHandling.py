@@ -25,14 +25,19 @@ def main():
                     grid.clickWall(pygame.mouse.get_pos(), False)
             if event.type == KEYDOWN:
                 if event.key == K_b:
-                    DFS_BFS(grid, BFS)
-                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                    DFS_BFS(grid, BFS, visualisePath=False, visualiseEnd=True)
                 elif event.key == K_d:
-                    DFS_BFS(grid, DFS)
-                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                    DFS_BFS(grid, DFS, False, True)
                 elif event.key == K_a:
-                    aStar(grid)
-                    grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                    aStar(grid, False, True)
+                else:
+                    continue
+
+                grid.newGrid((0, 0), (ROWS // 2, COLUMNS // 2))
+                while not pygame.event.get(KEYDOWN):
+                    if pygame.event.get(QUIT):
+                        pygame.quit()
+                        sys.exit()
 
         grid.visualise()
 

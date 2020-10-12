@@ -4,13 +4,15 @@ from pygame.locals import *
 from tkinter import messagebox, Tk
 
 
-def DFS_BFS(G, index):
+def DFS_BFS(G, index, visualisePath=False, visualiseEnd=False):
     queue = G.queue
     path = G.path
     end = G.end
 
     while True:
-        if pygame.event.get(QUIT):
+        if not pygame.display.get_active():
+            return
+        elif pygame.event.get(QUIT):
             pygame.quit()
             sys.exit()
 
@@ -23,7 +25,7 @@ def DFS_BFS(G, index):
                     path.append(temp.prev)
                     temp = temp.prev
 
-                G.visualise()
+                G.visualise() if visualiseEnd else ...
                 print("Done")
                 break
 
@@ -39,24 +41,22 @@ def DFS_BFS(G, index):
             print("no solution")
             break
 
-        G.visualise()
-
-    while not pygame.event.get(KEYDOWN):
-        if pygame.event.get(QUIT):
-            pygame.quit()
-            sys.exit()
+        G.visualise() if visualisePath else ...
 
 
-def aStar(G):
+def aStar(G, visualisePath=False, visualiseEnd=False):
     heuristics = lambda a, b: abs(a.x - b.x) + abs(a.y - b.y)
 
     queue = G.queue
     path = G.path
     end = G.end
     visited = G.visited
+    snakeBody = G.snakeBody
 
     while True:
-        if pygame.event.get(QUIT):
+        if not pygame.display.get_active():
+            return
+        elif pygame.event.get(QUIT):
             pygame.quit()
             sys.exit()
 
@@ -69,13 +69,12 @@ def aStar(G):
             current = winner
 
             if current == end:
-                temp = current
-                while temp.prev:
-                    path.append(temp.prev)
-                    temp = temp.prev
+                while current.prev:
+                    path.append(current)
+                    current = current.prev
 
-                G.visualise()
-                print("Done")
+                path.reverse()
+                G.visualise() if visualiseEnd else ...
                 break
 
             queue.remove(current)
@@ -83,7 +82,7 @@ def aStar(G):
             current.visited = True
 
             for neighbor in current.neighbors:
-                if neighbor in visited or neighbor.wall:
+                if neighbor.visited or neighbor.wall or neighbor.position in snakeBody:
                     continue
                 tempG = current.g + 1
 
@@ -106,12 +105,6 @@ def aStar(G):
             if sys.platform != 'darwin':
                 Tk().wm_withdraw()
                 messagebox.showinfo("No Solution", "There was no solution")
-            print("no solution")
             break
 
-        G.visualise()
-
-    while not pygame.event.get(KEYDOWN):
-        if pygame.event.get(QUIT):
-            pygame.quit()
-            sys.exit()
+        G.visualise() if visualisePath else ...
