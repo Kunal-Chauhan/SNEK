@@ -128,7 +128,8 @@ def main():
                         if event.key == K_RETURN:
                             main()
 
-                # message_box('You Lost!', 'Play again...')
+                if sys.platform != 'darwin':
+                    message_box('You Lost!', 'Play again...')
                 print("You LOST!")
 
                 snek.reset((10, 10))

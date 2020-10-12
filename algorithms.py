@@ -33,8 +33,9 @@ def DFS_BFS(G, index):
                     i.prev = current
                     queue.append(i)
         else:
-            # Tk().wm_withdraw()
-            # messagebox.showinfo("No Solution", "There was no solution")
+            if sys.platform != 'darwin':
+                Tk().wm_withdraw()
+                messagebox.showinfo("No Solution", "There was no solution")
             print("no solution")
             break
 
@@ -102,9 +103,9 @@ def aStar(G):
                     neighbor.prev = current
 
         else:
-            # Tk().wm_withdraw()
-            # messagebox.showinfo("No Solution", "There was no solution")
-            # noFlag = False
+            if sys.platform != 'darwin':
+                Tk().wm_withdraw()
+                messagebox.showinfo("No Solution", "There was no solution")
             print("no solution")
             break
 
