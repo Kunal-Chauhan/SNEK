@@ -154,6 +154,13 @@ class Snake:
         for c in self.body[1:]:
             c.draw(surface)
 
+    def removeCube(self, collision_index):
+        # self.body.pop(len(self.body)-1)
+        i = len(self.body)-1
+        while(i > collision_index):
+            self.body.pop(i)
+            i = i-1
+
 
 class Spot:
     def __init__(self, position):
@@ -174,7 +181,8 @@ class Spot:
         if shape == 1:
             pygame.draw.rect(win, clr, (self.x * W, self.y * H, W - 1, H - 1))
         else:
-            pygame.draw.circle(win, clr, (self.x * W + W // 2, self.y * H + H // 2), W // 3)
+            pygame.draw.circle(win, clr, (self.x * W + W //
+                                          2, self.y * H + H // 2), W // 3)
 
     def add_neighbors(self, grid):
         if self.x < COLUMNS - 1:
