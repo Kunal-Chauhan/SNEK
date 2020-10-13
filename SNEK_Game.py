@@ -187,7 +187,8 @@ def main():
             if snek.body[x].pos in list(map(lambda z: z.pos, snek.body[x + 1:])):
                 win.fill(DARK_BLUE)
 
-                text_on_screen("Game Over! Your Score: " + str(len(snek.body)), PINK, 100, 200)
+                text_on_screen("Game Over! Your Score: " +
+                               str(len(snek.body)), PINK, 100, 200)
                 pygame.display.update()
                 pygame.mixer.music.play()
 
@@ -232,8 +233,7 @@ def CPU():
             if snek.head.pos == snack.pos:
                 snek.addCube()
                 snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
-                grid.reset(snek.head.pos, snack.pos, snek)
-
+                grid.reset(snek.head.pos, snack.pos, snek, True)
             redrawWindow(win, grid)
 
 
@@ -244,11 +244,11 @@ def algoHandling():
         key = drawObstacle(grid)
 
         if key[K_b]:
-            DFS_BFS(grid, BFS, visualisePath=False, visualiseEnd=True)
+            DFS_BFS(grid, BFS, visualisePath=True, visualiseEnd=True)
         elif key[K_d]:
-            DFS_BFS(grid, DFS, False, True)
+            DFS_BFS(grid, DFS, True, True)
         elif key[K_a]:
-            aStar(grid, False, True)
+            aStar(grid, True, True)
         elif key[K_q]:
             grid.reset((0, 0), (ROWS // 2, COLUMNS // 2))
             return
