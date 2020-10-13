@@ -13,9 +13,6 @@ pygame.display.set_caption("SNEK Game")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(pygame.font.get_default_font(), 55)
 
-snek: Snake
-snack: Cube
-
 
 def drawGrid(w, rows, surface):
     sizeBetween = w // rows
@@ -93,6 +90,10 @@ def text_on_screen(text, colour, x, y):
     win.blit(screen_text, (x, y))
 
 
+snek = Snake(DARK_BLUE, (10, 10))
+snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
+
+
 def welcome():
     # loading and playing music
     # noinspection SpellCheckingInspection
@@ -124,11 +125,31 @@ def welcome():
         pygame.display.update()
 
 
+def pause():
+    bg = pygame.Surface((WIDTH, HEIGHT))
+    bg.set_alpha(180)
+    bg.fill(DARK_BLUE)
+    win.blit(bg, bg.get_rect())
+
+    text_on_screen("GAME PAUSED", PINK, 200, 200)
+    text_on_screen("[Y] Exit to Main Menu", PINK, 150, 250)
+    text_on_screen("[Q] Quit Program", PINK, 180, 300)
+    text_on_screen("Any key to resume...", PINK, 165, 600)
+
+    pygame.display.update()
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == KEYDOWN:
+                return pygame.key.get_pressed()
+
+
 def main():
     global snek, snack
 
-    snek = Snake(DARK_BLUE, (10, 10))
-    snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
     flag = True
@@ -136,7 +157,27 @@ def main():
     while flag:
         clock.tick(10)
 
-        snek.move()
+        if pygame.event.get(QUIT):
+            pygame.quit()
+            sys.exit()
+
+        if pygame.event.get(KEYDOWN):
+            keys = pygame.key.get_pressed()
+            snek.move(keys)
+
+            if keys[K_p] or keys[K_ESCAPE]:
+                pauseKeys = pause()
+                while True:
+                    if pauseKeys[K_y]:
+                        snek.reset((10, 10))
+                        return
+                    elif pauseKeys[K_q]:
+                        pygame.quit()
+                        sys.exit()
+                    else:
+                        break
+        else:
+            snek.move()
 
         if snek.body[0].pos == snack.pos:
             snek.addCube()

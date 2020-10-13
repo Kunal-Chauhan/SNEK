@@ -62,33 +62,28 @@ class Snake:
         except IndexError:
             pass
 
-    def move(self):
-        if pygame.event.get(QUIT):
-            pygame.quit()
-            sys.exit()
+    def move(self, keys=None):
+        if not keys:
+            pass
+        elif keys[K_LEFT]:
+            self.dirX = -1
+            self.dirY = 0
+            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        if pygame.event.get(KEYDOWN):
-            keys = pygame.key.get_pressed()
+        elif keys[K_RIGHT]:
+            self.dirX = 1
+            self.dirY = 0
+            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-            if keys[K_LEFT]:
-                self.dirX = -1
-                self.dirY = 0
-                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+        elif keys[K_UP]:
+            self.dirX = 0
+            self.dirY = -1
+            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-            elif keys[K_RIGHT]:
-                self.dirX = 1
-                self.dirY = 0
-                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
-
-            elif keys[K_UP]:
-                self.dirX = 0
-                self.dirY = -1
-                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
-
-            elif keys[K_DOWN]:
-                self.dirX = 0
-                self.dirY = 1
-                self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
+        elif keys[K_DOWN]:
+            self.dirX = 0
+            self.dirY = 1
+            self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
         for i, c in enumerate(self.body):
             p = c.pos[:]
