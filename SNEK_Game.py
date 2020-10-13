@@ -95,6 +95,7 @@ snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
 
 
 def welcome():
+    global ZEN_MODE
     # loading and playing music
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('progressivehouse2.ogg')
@@ -108,6 +109,7 @@ def welcome():
         text_on_screen("Press 1 To Play", DARK_BLUE, 180, 400)
         text_on_screen("Press 2 for CPU", DARK_BLUE, 180, 450)
         text_on_screen("Press 3 for Algorithm Comparison", DARK_BLUE, 40, 500)
+        text_on_screen("Press 4 for Zen Mode", DARK_BLUE, 130, 550)
 
         # tracking events
         for event in pygame.event.get():
@@ -121,6 +123,9 @@ def welcome():
                     CPU()
                 elif event.key == K_3:
                     algoHandling()
+                elif event.key == K_4:
+                    ZEN_MODE = True
+                    main()
 
         pygame.display.update()
 
@@ -148,7 +153,7 @@ def pause():
 
 
 def main():
-    global snek, snack
+    global snek, snack, ZEN_MODE
 
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
@@ -183,28 +188,35 @@ def main():
             snek.addCube()
             snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
 
-        for x in range(len(snek.body)):
-            if snek.body[x].pos in list(map(lambda z: z.pos, snek.body[x + 1:])):
-                win.fill(DARK_BLUE)
+        if ZEN_MODE:
+            for x in range(len(snek.body)):
+                if snek.body[x].pos in list(map(lambda z: z.pos, snek.body[x + 1:])):
+                    snek.removeCube(
+                        list(map(lambda z: z.pos, snek.body[x + 1:])).index(snek.body[x].pos))
+                    break
+        else:
+            for x in range(len(snek.body)):
+                if snek.body[x].pos in list(map(lambda z: z.pos, snek.body[x + 1:])):
+                    win.fill(DARK_BLUE)
 
-                text_on_screen("Game Over! Your Score: " +
-                               str(len(snek.body)), PINK, 100, 200)
-                pygame.display.update()
-                pygame.mixer.music.play()
+                    text_on_screen("Game Over! Your Score: " +
+                                   str(len(snek.body)), PINK, 100, 200)
+                    pygame.display.update()
+                    pygame.mixer.music.play()
 
-                print('Score: ', len(snek.body))
+                    print('Score: ', len(snek.body))
 
-                for event in pygame.event.get():
-                    if event.type == KEYDOWN:
-                        if event.key == K_RETURN:
-                            main()
+                    for event in pygame.event.get():
+                        if event.type == KEYDOWN:
+                            if event.key == K_RETURN:
+                                main()
 
-                if sys.platform != 'darwin':
-                    message_box('You Lost!', 'Play again...')
-                print("You LOST!")
+                    if sys.platform != 'darwin':
+                        message_box('You Lost!', 'Play again...')
+                    print("You LOST!")
 
-                snek.reset((10, 10))
-                break
+                    snek.reset((10, 10))
+                    break
 
         redrawWindow(win)
 
