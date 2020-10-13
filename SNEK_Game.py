@@ -1,12 +1,8 @@
 import random
-import pygame
-from pygame.locals import *
 import tkinter as tk
-from tkinter import messagebox
-import sys
 from constants import *
 from Elements import Snake, Cube, Grid
-from algorithms import aStar
+from algorithms import *
 
 
 pygame.init()
@@ -32,6 +28,23 @@ def drawGrid(w, rows, surface):
 
         pygame.draw.line(surface, WHITE, (x, 0), (x, w), 1)
         pygame.draw.line(surface, WHITE, (0, y), (w, y), 1)
+
+
+def drawObstacle(grid):
+    while True:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
+                if pygame.mouse.get_pressed()[0]:
+                    grid.clickWall(pygame.mouse.get_pos(), True)
+                if pygame.mouse.get_pressed()[2]:
+                    grid.clickWall(pygame.mouse.get_pos(), False)
+            if event.type == KEYDOWN:
+                return pygame.key.get_pressed()
+
+        grid.visualise()
 
 
 def redrawWindow(surface, grid=None):
@@ -91,15 +104,22 @@ def welcome():
         win.fill(PINK)
         text_on_screen("Welcome to SNEK", DARK_BLUE, 185, 200)
         # noinspection SpellCheckingInspection
-        text_on_screen("Press Spacebar To Play", DARK_BLUE, 140, 500)
+        text_on_screen("Press 1 To Play", DARK_BLUE, 180, 400)
+        text_on_screen("Press 2 for CPU", DARK_BLUE, 180, 450)
+        text_on_screen("Press 3 for Algorithm Comparison", DARK_BLUE, 40, 500)
+
         # tracking events
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
                 sys.exit(0)
             if event.type == KEYDOWN:
-                if event.key == K_SPACE:
+                if event.key == K_1:
+                    main()
+                elif event.key == K_2:
                     CPU()
+                elif event.key == K_3:
+                    algoHandling()
 
         pygame.display.update()
 
@@ -147,23 +167,6 @@ def main():
         redrawWindow(win)
 
 
-def drawObstacle(grid):
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed()[0]:
-                    grid.clickWall(pygame.mouse.get_pos(), True)
-                if pygame.mouse.get_pressed()[2]:
-                    grid.clickWall(pygame.mouse.get_pos(), False)
-            if event.type == KEYDOWN:
-                return
-
-        grid.visualise()
-
-
 def CPU():
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
@@ -191,6 +194,32 @@ def CPU():
                 grid.reset(snek.head.pos, snack.pos, snek)
 
             redrawWindow(win, grid)
+
+
+def algoHandling():
+    grid = Grid(win, (0, 0), (ROWS // 2, COLUMNS // 2))
+
+    while True:
+        key = drawObstacle(grid)
+
+        if key[K_b]:
+            DFS_BFS(grid, BFS, visualisePath=False, visualiseEnd=True)
+        elif key[K_d]:
+            DFS_BFS(grid, DFS, False, True)
+        elif key[K_a]:
+            aStar(grid, False, True)
+        elif key[K_q]:
+            grid.reset((0, 0), (ROWS // 2, COLUMNS // 2))
+            return
+        else:
+            continue
+
+        grid.reset((0, 0), (ROWS // 2, COLUMNS // 2))
+
+        while not pygame.event.get(KEYDOWN) and not pygame.event.get(MOUSEBUTTONDOWN):
+            if pygame.event.get(QUIT):
+                pygame.quit()
+                sys.exit()
 
 
 welcome()

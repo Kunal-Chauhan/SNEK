@@ -250,7 +250,7 @@ class Grid:
 
         queue.append(self.start)
 
-    def reset(self, start, end, obstacles=None):
+    def reset(self, start, end, obstacles=None, retainWalls=False):
         self.visited = []
         self.path = []
         self.queue = []
@@ -258,7 +258,7 @@ class Grid:
 
         for i in range(COLUMNS):
             for j in range(ROWS):
-                self.grid[i][j].reset(retainWalls=True)
+                self.grid[i][j].reset(retainWalls=retainWalls)
 
         startX, startY = start
         endX, endY = end
@@ -269,7 +269,7 @@ class Grid:
         if obstacles:
             self.snakeBody = obstacles
 
-        self.end.visited = False
+        self.start.visited = True
         self.queue.append(self.start)
 
     def visualise(self):
