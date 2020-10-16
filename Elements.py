@@ -292,10 +292,10 @@ class Grid:
                 if spot in self.path:
                     spot.show(self.win, LIGHT_BLUE)
                 elif spot.visited:
-                    spot.show(self.win, GREEN)
+                    spot.show(self.win, GOLDEN)
                 if spot in self.queue:
-                    spot.show(self.win, BLUE)
-                    spot.show(self.win, DARK_BLUE, 0)
+                    spot.show(self.win, CREAM)
+                    spot.show(self.win, CREAM, 0)
 
                 # start and end point
                 start.show(self.win, DARK_BLUE)
