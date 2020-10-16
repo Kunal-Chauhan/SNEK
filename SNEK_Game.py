@@ -4,6 +4,8 @@ from constants import *
 from Elements import Snake, Cube, Grid
 from algorithms import *
 
+# For Zen Mode
+ZEN_MODE = False
 
 pygame.init()
 pygame.mixer.init()
@@ -98,8 +100,8 @@ def welcome():
     global ZEN_MODE
     # loading and playing music
     # noinspection SpellCheckingInspection
-    pygame.mixer.music.load('progressivehouse2.ogg')
-    pygame.mixer.music.play()
+    # pygame.mixer.music.load('progressivehouse2.ogg')
+    # pygame.mixer.music.play()
 
     # welcome screen loop
     while True:
@@ -128,6 +130,20 @@ def welcome():
                     main()
 
         pygame.display.update()
+
+
+def isPaused(keys):
+    if keys[K_p] or keys[K_ESCAPE]:
+        pauseKeys = pause()
+        while True:
+            if pauseKeys[K_y]:
+                snek.reset((10, 10))
+                return
+            elif pauseKeys[K_q]:
+                pygame.quit()
+                sys.exit()
+            else:
+                break
 
 
 def pause():
@@ -170,17 +186,7 @@ def main():
             keys = pygame.key.get_pressed()
             snek.move(keys)
 
-            if keys[K_p] or keys[K_ESCAPE]:
-                pauseKeys = pause()
-                while True:
-                    if pauseKeys[K_y]:
-                        snek.reset((10, 10))
-                        return
-                    elif pauseKeys[K_q]:
-                        pygame.quit()
-                        sys.exit()
-                    else:
-                        break
+            isPaused(keys)
         else:
             snek.move()
 
@@ -238,9 +244,14 @@ def CPU():
         path = tuple(spot.position for spot in grid.path)
 
         for p in path:
-            clock.tick(40)
+            clock.tick(10)
 
             snek.moveTo(p)
+
+            if pygame.event.get(KEYDOWN):
+                keys = pygame.key.get_pressed()
+
+                isPaused(keys)
 
             if snek.head.pos == snack.pos:
                 snek.addCube()
@@ -254,6 +265,8 @@ def algoHandling():
 
     while True:
         key = drawObstacle(grid)
+
+        isPaused(key)
 
         if key[K_b]:
             DFS_BFS(grid, BFS, visualisePath=True, visualiseEnd=True)

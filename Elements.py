@@ -161,7 +161,7 @@ class Snake:
     def removeCube(self, collision_index):
         # self.body.pop(len(self.body)-1)
         i = len(self.body)-1
-        while(i > collision_index):
+        while i > collision_index:
             self.body.pop(i)
             i = i-1
 

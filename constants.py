@@ -21,6 +21,3 @@ H = HEIGHT // ROWS
 # Algorithm Selection
 DFS = 1
 BFS = 0
-
-# For Zen Mode
-ZEN_MODE = False
