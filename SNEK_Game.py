@@ -133,6 +133,27 @@ def welcome():
 
 
 def isPaused(keys):
+    def pause():
+        bg = pygame.Surface((WIDTH, HEIGHT))
+        bg.set_alpha(180)
+        bg.fill(DARK_BLUE)
+        win.blit(bg, bg.get_rect())
+
+        text_on_screen("GAME PAUSED", PINK, 200, 200)
+        text_on_screen("[Y] Exit to Main Menu", PINK, 150, 250)
+        text_on_screen("[Q] Quit Program", PINK, 180, 300)
+        text_on_screen("Any key to resume...", PINK, 165, 600)
+
+        pygame.display.update()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == KEYDOWN:
+                    return pygame.key.get_pressed()
+
     if keys[K_p] or keys[K_ESCAPE]:
         pauseKeys = pause()
         while True:
@@ -144,28 +165,6 @@ def isPaused(keys):
                 sys.exit()
             else:
                 break
-
-
-def pause():
-    bg = pygame.Surface((WIDTH, HEIGHT))
-    bg.set_alpha(180)
-    bg.fill(DARK_BLUE)
-    win.blit(bg, bg.get_rect())
-
-    text_on_screen("GAME PAUSED", PINK, 200, 200)
-    text_on_screen("[Y] Exit to Main Menu", PINK, 150, 250)
-    text_on_screen("[Q] Quit Program", PINK, 180, 300)
-    text_on_screen("Any key to resume...", PINK, 165, 600)
-
-    pygame.display.update()
-
-    while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == KEYDOWN:
-                return pygame.key.get_pressed()
 
 
 def main():
