@@ -84,7 +84,7 @@ def aStar(G, visualisePath=False, visualiseEnd=False):
             for neighbor in current.neighbors:
                 if neighbor.visited or neighbor.wall or neighbor.position in snakeBody:
                     continue
-                tempG = current.g + 1
+                tempG = current.g + neighbor.weight
 
                 newPath = False
                 if neighbor in queue:

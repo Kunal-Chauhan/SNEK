@@ -30,6 +30,8 @@ def drawGrid(w, rows, surface):
 
 
 def drawObstacle(grid):
+    weight = 0
+
     while True:
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -37,11 +39,32 @@ def drawObstacle(grid):
                 sys.exit()
             if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
                 if pygame.mouse.get_pressed()[0]:
-                    grid.clickWall(pygame.mouse.get_pos(), True)
+                    grid.clickWall(pygame.mouse.get_pos(), weight)
                 if pygame.mouse.get_pressed()[2]:
-                    grid.clickWall(pygame.mouse.get_pos(), False)
+                    grid.clickWall(pygame.mouse.get_pos())
             if event.type == KEYDOWN:
-                return pygame.key.get_pressed()
+                if event.key == K_0:
+                    weight = 0
+                elif event.key == K_1:
+                    weight = 1
+                elif event.key == K_2:
+                    weight = 2
+                elif event.key == K_3:
+                    weight = 3
+                elif event.key == K_4:
+                    weight = 4
+                elif event.key == K_5:
+                    weight = 5
+                elif event.key == K_6:
+                    weight = 6
+                elif event.key == K_7:
+                    weight = 7
+                elif event.key == K_8:
+                    weight = 8
+                elif event.key == K_9:
+                    weight = 9
+                else:
+                    return pygame.key.get_pressed()
 
         grid.visualise()
 
@@ -98,10 +121,6 @@ snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
 
 def welcome():
     global ZEN_MODE
-    # loading and playing music
-    # noinspection SpellCheckingInspection
-    # pygame.mixer.music.load('progressivehouse2.ogg')
-    # pygame.mixer.music.play()
 
     # welcome screen loop
     while True:
@@ -132,7 +151,7 @@ def welcome():
         pygame.display.update()
 
 
-def isPaused(keys):
+def goToMainMenu(keys):
     def pause():
         bg = pygame.Surface((WIDTH, HEIGHT))
         bg.set_alpha(180)
@@ -187,7 +206,7 @@ def main():
             keys = pygame.key.get_pressed()
             snek.move(keys)
 
-            if isPaused(keys):
+            if goToMainMenu(keys):
                 return
         else:
             snek.move()
@@ -253,7 +272,7 @@ def CPU():
             if pygame.event.get(KEYDOWN):
                 keys = pygame.key.get_pressed()
 
-                if isPaused(keys):
+                if goToMainMenu(keys):
                     return
 
             if snek.head.pos == snack.pos:
@@ -269,7 +288,7 @@ def algoHandling():
     while True:
         key = drawObstacle(grid)
 
-        if isPaused(key):
+        if goToMainMenu(key):
             return
 
         if key[K_b]:
@@ -284,7 +303,7 @@ def algoHandling():
         else:
             continue
 
-        grid.reset((0, 0), (ROWS // 2, COLUMNS // 2))
+        grid.reset((0, 0), (ROWS // 2, COLUMNS // 2), retainWalls=True, retainWeights=True)
 
         while not pygame.event.get(KEYDOWN) and not pygame.event.get(MOUSEBUTTONDOWN):
             if pygame.event.get(QUIT):

@@ -170,6 +170,7 @@ class Spot:
     def __init__(self, position):
         self.x, self.y = position
         self.f, self.g, self.h = 0, 0, 0
+        self.weight = 1
         self.neighbors = []
         self.prev = None
         self.wall = False
@@ -182,6 +183,9 @@ class Spot:
     def show(self, win, clr, shape=1):
         if self.wall:
             clr = BLACK
+        elif clr == PINK:
+            clr = (int((11-self.weight) * 0.1 * 255), 203, 203)
+
         if shape == 1:
             pygame.draw.rect(win, clr, (self.x * W, self.y * H, W - 1, H - 1))
         else:
@@ -207,13 +211,15 @@ class Spot:
         # if self.x > 0 and self.y > 0:
         #     self.neighbors.append(grid[self.x - 1][self.y - 1])
 
-    def reset(self, retainWalls=False):
+    def reset(self, retainWeight=False, retainWall=False):
         self.f, self.g, self.h = 0, 0, 0
         self.prev = None
         self.visited = False
 
-        if not retainWalls:
+        if not retainWall:
             self.wall = False
+        if not retainWeight:
+            self.weight = 1
 
 
 class Grid:
@@ -257,7 +263,7 @@ class Grid:
 
         queue.append(self.start)
 
-    def reset(self, start, end, obstacles=None, retainWalls=False):
+    def reset(self, start, end, obstacles=None, retainWeights=False, retainWalls=False):
         self.visited = []
         self.path = []
         self.queue = []
@@ -265,7 +271,7 @@ class Grid:
 
         for i in range(COLUMNS):
             for j in range(ROWS):
-                self.grid[i][j].reset(retainWalls=retainWalls)
+                self.grid[i][j].reset(retainWeights, retainWalls)
 
         startX, startY = start
         endX, endY = end
@@ -303,8 +309,13 @@ class Grid:
 
         pygame.display.flip()
 
-    def clickWall(self, pos, state):
+    def clickWall(self, pos, weight=1):
         i = pos[0] // W
         j = pos[1] // H
-        self.grid[i][j].wall = state
-        self.walls.append((i, j))
+
+        if weight == 0:
+            self.grid[i][j].wall = True
+            self.walls.append((i, j))
+        else:
+            self.grid[i][j].wall = False
+            self.grid[i][j].weight = weight
