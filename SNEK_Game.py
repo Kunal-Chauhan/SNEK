@@ -61,12 +61,12 @@ def redrawWindow(surface, grid=None):
 
 
 def randomSnack(rows, item, walls=()):
-    positions = item.body + list(walls)
+    positions = [i.pos for i in item.body] + list(walls)
 
     while True:
         x = random.randrange(rows)
         y = random.randrange(rows)
-        if len(list(filter(lambda z: z.pos == (x, y), positions))) > 0:
+        if len(list(filter(lambda z: z == (x, y), positions))) > 0:
             continue
         else:
             break
@@ -159,12 +159,14 @@ def isPaused(keys):
         while True:
             if pauseKeys[K_y]:
                 snek.reset((10, 10))
-                return
+                return True
             elif pauseKeys[K_q]:
                 pygame.quit()
                 sys.exit()
             else:
                 break
+
+    return False
 
 
 def main():
@@ -185,7 +187,8 @@ def main():
             keys = pygame.key.get_pressed()
             snek.move(keys)
 
-            isPaused(keys)
+            if isPaused(keys):
+                return
         else:
             snek.move()
 
@@ -243,18 +246,19 @@ def CPU():
         path = tuple(spot.position for spot in grid.path)
 
         for p in path:
-            clock.tick(10)
+            clock.tick(50)
 
             snek.moveTo(p)
 
             if pygame.event.get(KEYDOWN):
                 keys = pygame.key.get_pressed()
 
-                isPaused(keys)
+                if isPaused(keys):
+                    return
 
             if snek.head.pos == snack.pos:
                 snek.addCube()
-                snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
+                snack = Cube(randomSnack(ROWS, snek, grid.walls), cubeColor=RED)
                 grid.reset(snek.head.pos, snack.pos, snek, True)
             redrawWindow(win, grid)
 
@@ -265,7 +269,8 @@ def algoHandling():
     while True:
         key = drawObstacle(grid)
 
-        isPaused(key)
+        if isPaused(key):
+            return
 
         if key[K_b]:
             DFS_BFS(grid, BFS, visualisePath=True, visualiseEnd=True)
