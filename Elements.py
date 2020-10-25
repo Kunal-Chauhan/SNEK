@@ -176,6 +176,12 @@ class Spot:
         self.wall = False
         self.visited = False
 
+    def __call__(self, *args, **kwargs):
+        return self.x, self.y, self.weight
+
+    def __repr__(self):
+        return f'{self.x, self.y}, w: {self.weight}, v: {self.visited}'
+
     @property
     def position(self):
         return self.x, self.y
@@ -239,6 +245,11 @@ class Grid:
         self.end = end
 
         self.newGrid(start, end)
+
+    def __call__(self, *args, **kwargs):
+        grid = tuple([tuple([self.grid[i][j]() for j in self.columns]) for i in self.rows])
+        info = {"grid": grid, "walls": self.walls, "snake": self.snakeBody}
+        return info
 
     def newGrid(self, start, end):
         queue = self.queue = []
