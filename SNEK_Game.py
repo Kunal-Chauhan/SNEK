@@ -43,6 +43,10 @@ def drawObstacle(grid):
                 if pygame.mouse.get_pressed()[2]:
                     grid.clickWall(pygame.mouse.get_pos())
             if event.type == KEYDOWN:
+
+                if goToMainMenu(pygame.key.get_pressed()):
+                    return
+
                 if event.key == K_0:
                     weight = 0
                 elif event.key == K_1:
@@ -63,6 +67,10 @@ def drawObstacle(grid):
                     weight = 8
                 elif event.key == K_9:
                     weight = 9
+                elif event.key == K_s:
+                    weight = -1
+                elif event.key == K_e:
+                    weight = -2
                 else:
                     return pygame.key.get_pressed()
 
@@ -291,19 +299,21 @@ def algoHandling():
         if goToMainMenu(key):
             return
 
-        if key[K_b]:
+        if not grid.hasStartAndEnd():
+            continue
+        elif key[K_b]:
             DFS_BFS(grid, BFS, visualisePath=True, visualiseEnd=True)
         elif key[K_d]:
             DFS_BFS(grid, DFS, True, True)
         elif key[K_a]:
             aStar(grid, True, True)
         elif key[K_q]:
-            grid.reset((0, 0), (ROWS // 2, COLUMNS // 2))
+            grid.reset()
             return
         else:
             continue
 
-        grid.reset((0, 0), (ROWS // 2, COLUMNS // 2), retainWalls=True, retainWeights=True)
+        grid.reset(retainWalls=True, retainWeights=True)
 
         while not pygame.event.get(KEYDOWN) and not pygame.event.get(MOUSEBUTTONDOWN):
             if pygame.event.get(QUIT):

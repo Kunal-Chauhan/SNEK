@@ -223,8 +223,10 @@ class Spot:
 
 
 class Grid:
-    def __init__(self, window, start, end):
+    def __init__(self, window, start=None, end=None, rows=ROWS, columns=COLUMNS):
         self.win = window
+        self.rows = rows
+        self.columns = columns
 
         self.queue = []  # set of open nodes
         self.visited = []  # set of visited nodes
@@ -233,7 +235,8 @@ class Grid:
         self.snakeBody = []  # for making snake body as walls in CPU mode
         self.walls = []     # spots with infinite weight
 
-        self.start = self.end = None
+        self.start = start
+        self.end = end
 
         self.newGrid(start, end)
 
@@ -243,46 +246,49 @@ class Grid:
         self.visited = []
         self.path = []
 
-        for i in range(COLUMNS):
+        for i in range(self.columns):
             arr = []
-            for j in range(ROWS):
+            for j in range(self.rows):
                 arr.append(Spot((i, j)))
             self.grid.append(arr)
 
-        for i in range(COLUMNS):
-            for j in range(ROWS):
+        for i in range(self.columns):
+            for j in range(self.rows):
                 grid[i][j].add_neighbors(grid)
 
-        startX, startY = start
-        endX, endY = end
+        if start:
+            startX, startY = start
+            self.start = grid[startX][startY]
+            self.start.visited = True
 
-        self.start = grid[startX][startY]
-        self.end = grid[endX][endY]
-
-        self.start.visited = True
+        if end:
+            endX, endY = end
+            self.end = grid[endX][endY]
 
         queue.append(self.start)
 
-    def reset(self, start, end, obstacles=None, retainWeights=False, retainWalls=False):
+    def reset(self, start=None, end=None, obstacles=None, retainWeights=False, retainWalls=False):
         self.visited = []
         self.path = []
         self.queue = []
         self.snakeBody = []
 
-        for i in range(COLUMNS):
-            for j in range(ROWS):
+        for i in range(self.columns):
+            for j in range(self.rows):
                 self.grid[i][j].reset(retainWeights, retainWalls)
 
-        startX, startY = start
-        endX, endY = end
+        if start:
+            startX, startY = start
+            self.start = self.grid[startX][startY]
+            self.start.visited = True
 
-        self.start = self.grid[startX][startY]
-        self.end = self.grid[endX][endY]
+        if end:
+            endX, endY = end
+            self.end = self.grid[endX][endY]
 
         if obstacles:
             self.snakeBody = obstacles
 
-        self.start.visited = True
         self.queue.append(self.start)
 
     def visualise(self):
@@ -290,8 +296,8 @@ class Grid:
         start = self.start
         end = self.end
 
-        for i in range(COLUMNS):
-            for j in range(ROWS):
+        for i in range(self.columns):
+            for j in range(self.rows):
                 spot = self.grid[i][j]
                 spot.show(self.win, PINK)
 
@@ -304,16 +310,27 @@ class Grid:
                     spot.show(self.win, CREAM, 0)
 
                 # start and end point
-                start.show(self.win, DARK_BLUE)
-                end.show(self.win, RED)
+                start.show(self.win, DARK_BLUE) if start else ...
+                end.show(self.win, RED) if end else ...
 
         pygame.display.flip()
+
+    def hasStartAndEnd(self):
+        return True if self.start and self.end else False
 
     def clickWall(self, pos, weight=1):
         i = pos[0] // W
         j = pos[1] // H
 
-        if weight == 0:
+        if weight == -2:
+            self.end = self.grid[i][j]
+        elif weight == -1:
+            self.start.visited = False
+            self.queue.pop()
+            self.start = self.grid[i][j]
+            self.start.visited = True
+            self.queue.append(self.start)
+        elif weight == 0:
             self.grid[i][j].wall = True
             self.walls.append((i, j))
         else:
