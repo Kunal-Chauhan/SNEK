@@ -52,12 +52,8 @@ class Server(Network):
                     self.sock.sendto(byteObject, addr)
         except KeyboardInterrupt:
             print("Closing server...")
-        except socket.error as e:
-            print("(Server) SOCKET: ", e)
-        except json.decoder.JSONDecodeError as e:
-            print("(Server) JSON: ", e)
         except Exception as e:
-            print("(Server) Unknown: ", e)
+            print(f"(Server-HandleClient) {type(e).__name__}: {e}")
 
     def run(self):
         print("[SERVER STARTED] ", self.address)
@@ -71,12 +67,8 @@ class Server(Network):
                 thread.start()
         except KeyboardInterrupt:
             print("\nClosing server...")
-        except socket.error as e:
-            print("(Server) Socket: ", e)
-        except threading.ThreadError as e:
-            print("(Server) Threading: ", e)
         except Exception as e:
-            print("(Server) Unknown: ", e)
+            print(f"(Server-Run) {type(e).__name__}: {e}")
 
     def __del__(self):
         self.sock.close()
@@ -98,12 +90,8 @@ class Client(Network):
             return msg
         except KeyboardInterrupt:
             print("\nDisconnecting...")
-        except socket.error as e:
-            print("(Client) SOCKET: ", e)
-        except json.decoder.JSONDecodeError as e:
-            print("(Client) JSON: ", e)
         except Exception as e:
-            print("(Client) Unknown: ", e)
+            print(f"(Client-requestServer) {type(e).__name__}: {e}")
 
     def __del__(self):
         self.sock.close()
