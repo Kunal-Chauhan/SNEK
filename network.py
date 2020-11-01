@@ -1,5 +1,6 @@
 import socket
 import threading
+import traceback
 import json
 from typing import Union
 
@@ -52,8 +53,8 @@ class Server(Network):
                     self.sock.sendto(byteObject, addr)
         except KeyboardInterrupt:
             print("Closing server...")
-        except Exception as e:
-            print(f"(Server-HandleClient) {type(e).__name__}: {e}")
+        except Exception:
+            traceback.print_exc()
 
     def run(self):
         print("[SERVER STARTED] ", self.address)
@@ -67,8 +68,8 @@ class Server(Network):
                 thread.start()
         except KeyboardInterrupt:
             print("\nClosing server...")
-        except Exception as e:
-            print(f"(Server-Run) {type(e).__name__}: {e}")
+        except Exception:
+            traceback.print_exc()
 
     def __del__(self):
         self.sock.close()
@@ -90,8 +91,8 @@ class Client(Network):
             return msg
         except KeyboardInterrupt:
             print("\nDisconnecting...")
-        except Exception as e:
-            print(f"(Client-requestServer) {type(e).__name__}: {e}")
+        except Exception:
+            traceback.print_exc()
 
     def __del__(self):
         self.sock.close()
