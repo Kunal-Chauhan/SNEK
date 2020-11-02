@@ -242,24 +242,70 @@ def CPU():
     drawObstacle(grid)
 
     while True:
-        aStar(grid, visualisePath=False, visualiseEnd=False)
-        path = tuple(spot.position for spot in grid.path)
+        if aStar(grid, visualisePath=False, visualiseEnd=False) != False:
+            print(snek.head.pos[0], snek.head.pos[1])
+            path = tuple(spot.position for spot in grid.path)
 
-        for p in path:
+            for p in path:
+                clock.tick(50)
+
+                snek.moveTo(p)
+
+                if pygame.event.get(KEYDOWN):
+                    keys = pygame.key.get_pressed()
+
+                    if isPaused(keys):
+                        return
+
+                if snek.head.pos == snack.pos:
+                    snek.addCube()
+                    snack = Cube(randomSnack(
+                        ROWS, snek, grid.walls), cubeColor=RED)
+                    grid.reset(snek.head.pos, snack.pos, snek, True)
+                redrawWindow(win, grid)
+
+        else:
+            print("dance")
+            x = snek.head.pos[0]
+            y = snek.head.pos[1]
             clock.tick(50)
 
-            snek.moveTo(p)
+            if (x+1 < COLUMNS) and ((x+1, y) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
+                print("a")
+                snek.moveTo((x+1, y))
+                grid.reset(snek.head.pos, snack.pos, snek, True)
+
+            elif (x-1 > -1) and ((x-1, y) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
+                print("b")
+                snek.moveTo((x-1, y))
+                grid.reset(snek.head.pos, snack.pos, snek, True)
+
+            elif (y+1 < ROWS) and ((x, y+1) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
+                print("c")
+                snek.moveTo((x, y+1))
+                grid.reset(snek.head.pos, snack.pos, snek, True)
+
+            elif (y-1 > -1) and ((x, y-1) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
+                print("d")
+                snek.moveTo((x, y-1))
+                grid.reset(snek.head.pos, snack.pos, snek, True)
+
+            else:
+                print("BREAKDOWN")
+                break
 
             if pygame.event.get(KEYDOWN):
                 keys = pygame.key.get_pressed()
 
-                if isPaused(keys):
+                if goToMainMenu(keys):
                     return
 
             if snek.head.pos == snack.pos:
                 snek.addCube()
-                snack = Cube(randomSnack(ROWS, snek, grid.walls), cubeColor=RED)
+                snack = Cube(randomSnack(
+                    ROWS, snek, grid.walls), cubeColor=RED)
                 grid.reset(snek.head.pos, snack.pos, snek, True)
+
             redrawWindow(win, grid)
 
 
