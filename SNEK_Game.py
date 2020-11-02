@@ -119,6 +119,7 @@ def message_box(subject, content):
 
 
 def text_on_screen(text, colour, x, y):
+    x = WIDTH // 2 - len(text) * 10
     screen_text = font.render(text, True, colour)
     win.blit(screen_text, (x, y))
 
