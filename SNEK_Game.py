@@ -292,7 +292,8 @@ def CPU():
 
             else:
                 print("BREAKDOWN")
-                break
+                pygame.quit()
+                sys.exit(0)
 
             if pygame.event.get(KEYDOWN):
                 keys = pygame.key.get_pressed()
