@@ -62,28 +62,28 @@ class Snake:
         except IndexError:
             pass
 
-    def move(self, keys=None):
-        if not keys:
+    def move(self, key=None):
+        if not key:
             pass
-        elif keys[K_LEFT]:
+        elif key == K_LEFT:
             if not (self.dirX == 1 and self.dirY == 0):
                 self.dirX = -1
                 self.dirY = 0
                 self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_RIGHT]:
+        elif key == K_RIGHT:
             if not (self.dirX == -1 and self.dirY == 0):
                 self.dirX = 1
                 self.dirY = 0
                 self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_UP]:
+        elif key == K_UP:
             if not (self.dirX == 0 and self.dirY == 1):
                 self.dirX = 0
                 self.dirY = -1
                 self.turns[self.head.pos[:]] = [self.dirX, self.dirY]
 
-        elif keys[K_DOWN]:
+        elif key == K_DOWN:
             if not (self.dirX == 0 and self.dirY == -1):
                 self.dirX = 0
                 self.dirY = 1

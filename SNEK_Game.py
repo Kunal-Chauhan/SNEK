@@ -29,50 +29,43 @@ def drawGrid(w, rows, surface):
         pygame.draw.line(surface, WHITE, (0, y), (w, y), 1)
 
 
+def _drawObstacle(grid, weight):
+    for event in pygame.event.get():
+        if event.type == QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
+            if pygame.mouse.get_pressed()[0]:
+                grid.clickWall(pygame.mouse.get_pos(), weight)
+            if pygame.mouse.get_pressed()[2]:
+                grid.clickWall(pygame.mouse.get_pos())
+        if event.type == KEYDOWN:
+            if goToMainMenu(event.key):
+                return
+
+            if K_0 <= event.key <= K_9:
+                weight = event.key - K_0
+            elif event.key == K_s:
+                weight = -1
+            elif event.key == K_e:
+                weight = -2
+            else:
+                return event.key
+
+    return weight
+
+
 def drawObstacle(grid):
     weight = 0
 
     while True:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
-                if pygame.mouse.get_pressed()[0]:
-                    grid.clickWall(pygame.mouse.get_pos(), weight)
-                if pygame.mouse.get_pressed()[2]:
-                    grid.clickWall(pygame.mouse.get_pos())
-            if event.type == KEYDOWN:
-
-                if goToMainMenu(pygame.key.get_pressed()):
-                    return
-
-                if event.key == K_0:
-                    weight = 0
-                elif event.key == K_1:
-                    weight = 1
-                elif event.key == K_2:
-                    weight = 2
-                elif event.key == K_3:
-                    weight = 3
-                elif event.key == K_4:
-                    weight = 4
-                elif event.key == K_5:
-                    weight = 5
-                elif event.key == K_6:
-                    weight = 6
-                elif event.key == K_7:
-                    weight = 7
-                elif event.key == K_8:
-                    weight = 8
-                elif event.key == K_9:
-                    weight = 9
-                elif event.key == K_s:
-                    weight = -1
-                elif event.key == K_e:
-                    weight = -2
-                else:
-                    return pygame.key.get_pressed()
+        x = _drawObstacle(grid, weight)
+        if x is None:
+            return None
+        elif -2 <= x <= 9:
+            weight = x
+        else:
+            return x
 
         grid.visualise()
 
@@ -119,7 +112,7 @@ def message_box(subject, content):
 
 
 def text_on_screen(text, colour, x, y):
-    x = WIDTH // 2 - len(text) * 10
+    x = (WIDTH // 2 - len(text) * 10) if not x else x
     screen_text = font.render(text, True, colour)
     win.blit(screen_text, (x, y))
 
@@ -160,7 +153,7 @@ def welcome():
         pygame.display.update()
 
 
-def goToMainMenu(keys):
+def goToMainMenu(key):
     def pause():
         bg = pygame.Surface((WIDTH, HEIGHT))
         bg.set_alpha(180)
@@ -180,15 +173,15 @@ def goToMainMenu(keys):
                     pygame.quit()
                     sys.exit()
                 if event.type == KEYDOWN:
-                    return pygame.key.get_pressed()
+                    return event.key
 
-    if keys[K_p] or keys[K_ESCAPE]:
-        pauseKeys = pause()
+    if key == K_p or key == K_ESCAPE:
+        pauseKey = pause()
         while True:
-            if pauseKeys[K_y]:
+            if pauseKey == K_y:
                 snek.reset((10, 10))
                 return True
-            elif pauseKeys[K_q]:
+            elif pauseKey == K_q:
                 pygame.quit()
                 sys.exit()
             else:
@@ -207,18 +200,22 @@ def main():
     while flag:
         clock.tick(10)
 
-        if pygame.event.get(QUIT):
-            pygame.quit()
-            sys.exit()
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
 
-        if pygame.event.get(KEYDOWN):
-            keys = pygame.key.get_pressed()
-            snek.move(keys)
+            if event.type == KEYDOWN:
+                if goToMainMenu(event.key):
+                    return
 
-            if goToMainMenu(keys):
-                return
-        else:
+                snek.move(event.key)
+                flag = False
+
+        if flag:
             snek.move()
+        else:
+            flag = True
 
         if snek.body[0].pos == snack.pos:
             snek.addCube()
@@ -267,7 +264,8 @@ def CPU():
 
     grid = Grid(win, (10, 10), snack.pos)
 
-    drawObstacle(grid)
+    if drawObstacle(grid) is None:
+        return
 
     while True:
         aStar(grid, visualisePath=False, visualiseEnd=False)
@@ -278,11 +276,10 @@ def CPU():
 
             snek.moveTo(p)
 
-            if pygame.event.get(KEYDOWN):
-                keys = pygame.key.get_pressed()
-
-                if goToMainMenu(keys):
-                    return
+            for event in pygame.event.get():
+                if event.type == KEYDOWN:
+                    if goToMainMenu(event.key):
+                        return
 
             if snek.head.pos == snack.pos:
                 snek.addCube()
@@ -297,18 +294,18 @@ def algoHandling():
     while True:
         key = drawObstacle(grid)
 
-        if goToMainMenu(key):
+        if key is None:
             return
 
         if not grid.hasStartAndEnd():
             continue
-        elif key[K_b]:
+        elif key == K_b:
             DFS_BFS(grid, BFS, visualisePath=True, visualiseEnd=True)
-        elif key[K_d]:
+        elif key == K_d:
             DFS_BFS(grid, DFS, True, True)
-        elif key[K_a]:
+        elif key == K_a:
             aStar(grid, True, True)
-        elif key[K_q]:
+        elif key == K_q:
             grid.reset()
             return
         else:
