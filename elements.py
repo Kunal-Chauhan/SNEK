@@ -175,9 +175,10 @@ class Spot:
         self.prev = None
         self.wall = False
         self.visited = False
+        self.offset = 0
 
     def __call__(self, *args, **kwargs):
-        return self.x, self.y, self.weight
+        return self.weight
 
     def __repr__(self):
         return f'{self.x, self.y}, w: {self.weight}, v: {self.visited}'
@@ -195,24 +196,23 @@ class Spot:
         if shape == 1:
             pygame.draw.rect(win, clr, (self.x * W, self.y * H, W - 1, H - 1))
         else:
-            pygame.draw.circle(win, clr, (self.x * W + W //
-                                          2, self.y * H + H // 2), W // 3)
+            pygame.draw.circle(win, clr, (self.x * W + W // 2, self.y * H + H // 2), W // 3)
 
-    def add_neighbors(self, grid):
-        if self.x < COLUMNS - 1:
+    def add_neighbors(self, grid, rows=ROWS, columns=COLUMNS):
+        if self.x < rows - 1:
             self.neighbors.append(grid[self.x + 1][self.y])
         if self.x > 0:
             self.neighbors.append(grid[self.x - 1][self.y])
-        if self.y < ROWS - 1:
+        if self.y < columns - 1:
             self.neighbors.append(grid[self.x][self.y + 1])
         if self.y > 0:
             self.neighbors.append(grid[self.x][self.y - 1])
         # Add Diagonals
-        # if self.x < COLUMNS - 1 and self.y < ROWS - 1:
+        # if self.x < rows - 1 and self.y < columns - 1:
         #     self.neighbors.append(grid[self.x + 1][self.y + 1])
-        # if self.x < COLUMNS - 1 and self.y > 0:
+        # if self.x < rows - 1 and self.y > 0:
         #     self.neighbors.append(grid[self.x + 1][self.y - 1])
-        # if self.x > 0 and self.y < ROWS - 1:
+        # if self.x > 0 and self.y < columns - 1:
         #     self.neighbors.append(grid[self.x - 1][self.y + 1])
         # if self.x > 0 and self.y > 0:
         #     self.neighbors.append(grid[self.x - 1][self.y - 1])
@@ -237,19 +237,32 @@ class Grid:
         self.queue = []  # set of open nodes
         self.visited = []  # set of visited nodes
         self.path = []  # shortest path nodes
-        self.grid = []  # all nodes in the grid
+        self.grid: list[list[Spot]] = []  # all nodes in the grid
         self.snakeBody = []  # for making snake body as walls in CPU mode
         self.walls = []     # spots with infinite weight
 
-        self.start = start
-        self.end = end
+        self.start: Spot = start
+        self.end: Spot = end
+
+        self._offset = 0
 
         self.newGrid(start, end)
 
     def __call__(self, *args, **kwargs):
-        grid = tuple([tuple([self.grid[i][j]() for j in self.columns]) for i in self.rows])
+        grid = tuple([tuple([self.grid[i][j]() for j in range(self.columns)]) for i in range(self.rows)])
         info = {"grid": grid, "walls": self.walls, "snake": self.snakeBody}
         return info
+
+    @property
+    def offset(self):
+        return self._offset
+
+    @offset.setter
+    def offset(self, new):
+        self._offset = new
+        for spots in self.grid:
+            for spot in spots:
+                spot.offset = new
 
     def newGrid(self, start, end):
         queue = self.queue = []
@@ -257,15 +270,15 @@ class Grid:
         self.visited = []
         self.path = []
 
-        for i in range(self.columns):
+        for i in range(self.rows):
             arr = []
-            for j in range(self.rows):
+            for j in range(self.columns):
                 arr.append(Spot((i, j)))
             self.grid.append(arr)
 
-        for i in range(self.columns):
-            for j in range(self.rows):
-                grid[i][j].add_neighbors(grid)
+        for i in range(self.rows):
+            for j in range(self.columns):
+                grid[i][j].add_neighbors(grid, self.rows, self.columns)
 
         if start:
             startX, startY = start
@@ -284,8 +297,8 @@ class Grid:
         self.queue = []
         self.snakeBody = []
 
-        for i in range(self.columns):
-            for j in range(self.rows):
+        for i in range(self.rows):
+            for j in range(self.columns):
                 self.grid[i][j].reset(retainWeights, retainWalls)
 
         if start:
@@ -302,13 +315,13 @@ class Grid:
 
         self.queue.append(self.start)
 
-    def visualise(self):
+    def visualise(self, updateScreen=True):
         self.win.fill(WHITE)
         start = self.start
         end = self.end
 
-        for i in range(self.columns):
-            for j in range(self.rows):
+        for i in range(self.rows):
+            for j in range(self.columns):
                 spot = self.grid[i][j]
                 spot.show(self.win, PINK)
 
@@ -324,26 +337,33 @@ class Grid:
                 start.show(self.win, DARK_BLUE) if start else ...
                 end.show(self.win, RED) if end else ...
 
-        pygame.display.flip()
+        pygame.display.flip() if updateScreen else ...
 
     def hasStartAndEnd(self):
         return True if self.start and self.end else False
 
     def clickWall(self, pos, weight=1):
         i = pos[0] // W
-        j = pos[1] // H
+        j = (pos[1] - self.offset) // H
 
-        if weight == -2:
-            self.end = self.grid[i][j]
-        elif weight == -1:
-            self.start.visited = False
-            self.queue.pop()
-            self.start = self.grid[i][j]
-            self.start.visited = True
-            self.queue.append(self.start)
-        elif weight == 0:
-            self.grid[i][j].wall = True
-            self.walls.append((i, j))
-        else:
-            self.grid[i][j].wall = False
-            self.grid[i][j].weight = weight
+        if j < 0:
+            return
+
+        try:
+            if weight == -2:
+                self.end = self.grid[i][j]
+            elif weight == -1:
+                if self.start:
+                    self.start.visited = False
+                    self.queue.pop()
+                self.start = self.grid[i][j]
+                self.start.visited = True
+                self.queue.append(self.start)
+            elif weight == 0:
+                self.grid[i][j].wall = True
+                self.walls.append((i, j))
+            else:
+                self.grid[i][j].wall = False
+                self.grid[i][j].weight = weight
+        except IndexError:
+            pass

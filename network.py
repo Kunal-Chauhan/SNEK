@@ -2,11 +2,11 @@ import socket
 import threading
 import traceback
 import json
-from typing import Union
+from constants import Type
 
 
 class Network:
-    header = 500
+    header = 10000
     format = 'utf-8'
 
     def __init__(self):
@@ -30,19 +30,19 @@ class Server(Network):
         self.sock.bind(self.address)
         self.lock = threading.Lock()
 
-    def processData(self, data: bytes, addr: tuple[str, int]) -> Union[bool, tuple, int, str, list, dict]:
+    def processData(self, data, addr: tuple[str, int]) -> Type.Basic:
         # override this function in the child class.
         # data - msg received from client
         # addr - (host, port)
-        pass
+        return None
 
-    def _handleClient(self, data, addr):
-        msg = self.processData(data, addr)
+    def _handleClient(self, data: bytes, addr):
         try:
+            obj = json.loads(data.decode(self.format))
+            msg = self.processData(obj, addr)
             if msg:
                 jsonObject = json.dumps(msg)
                 byteObject = jsonObject.encode(self.format)
-
                 with self.lock:
                     self.sock.sendto(byteObject, addr)
             else:
@@ -80,7 +80,7 @@ class Client(Network):
     def __init__(self):
         super(Client, self).__init__()
 
-    def requestServer(self, msg: Union[bool, tuple, int, str, list, dict]):
+    def requestServer(self, msg: Type.Basic):
         try:
             jsonObject = json.dumps(msg)
             byteObject = jsonObject.encode(self.format)

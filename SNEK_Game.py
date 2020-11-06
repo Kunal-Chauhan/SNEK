@@ -1,8 +1,10 @@
 import random
 import tkinter as tk
 from constants import *
-from Elements import Snake, Cube, Grid
+from elements import Snake, Cube, Grid
 from algorithms import *
+from client import SNEKClient
+import threading
 
 # For Zen Mode
 ZEN_MODE = False
@@ -10,7 +12,7 @@ ZEN_MODE = False
 pygame.init()
 pygame.mixer.init()
 
-win = pygame.display.set_mode((WIDTH, WIDTH))
+win: pygame.SurfaceType = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("SNEK Game")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(pygame.font.get_default_font(), 55)
@@ -133,6 +135,7 @@ def welcome():
         text_on_screen("Press 2 for CPU", DARK_BLUE, 180, 450)
         text_on_screen("Press 3 for Algorithm Comparison", DARK_BLUE, 40, 500)
         text_on_screen("Press 4 for Zen Mode", DARK_BLUE, 130, 550)
+        text_on_screen("Press 5 for Multiplayer Mode", DARK_BLUE, 60, 600)
 
         # tracking events
         for event in pygame.event.get():
@@ -149,6 +152,8 @@ def welcome():
                 elif event.key == K_4:
                     ZEN_MODE = True
                     main()
+                elif event.key == K_5:
+                    multiplayer()
 
         pygame.display.update()
 
@@ -317,6 +322,70 @@ def algoHandling():
             if pygame.event.get(QUIT):
                 pygame.quit()
                 sys.exit()
+
+
+def multiplayer():
+    surface = pygame.Surface((WIDTH, HEIGHT // 2))
+    size: tuple[int, int] = surface.get_size()
+    bg = surface.copy(), surface.copy()
+    players = Grid(bg[0], columns=ROWS//2), Grid(bg[1], columns=ROWS//2)
+
+    for surf in bg:
+        surf.set_alpha(180)
+        surf.fill(DARK_BLUE)
+
+    client = SNEKClient([players[0](), players[1]()])
+    playerID: int = client.playerID
+    enemyID = (playerID+1) % 2
+
+    # this array will decide the Y position of grid for every (in our case, two) player
+    offset = 0, size[1]
+    players[playerID].offset, players[enemyID].offset = offset[playerID], offset[enemyID]
+    weight = 0
+
+    def drawObstacleMultiplayer():
+        nonlocal weight
+
+        x = _drawObstacle(players[playerID], weight)
+        if x is None:
+            return 0
+        elif -2 <= x <= 9:
+            weight = x
+
+    def fetchData():
+        while True:
+            client.updatePlayers()
+            grid = client.players[enemyID]["grid"]
+            for m, spots in enumerate(players[enemyID].grid):
+                for n, spot in enumerate(spots):
+                    spot.weight = grid[m][n]
+
+            players[enemyID].snakeBody = client.players[enemyID]["snake"]
+            players[enemyID].walls = client.players[enemyID]["walls"]
+
+    thread = threading.Thread(target=fetchData)
+    thread.daemon = True
+    thread.start()
+
+    while True:
+        win.fill(PINK)
+
+        if client.state[enemyID] != State.run:
+            win.blit(bg[enemyID], (0, offset[enemyID]))
+            text_on_screen(str(client.state[enemyID]), PINK, None, 150 + offset[enemyID])
+
+        if client.state[playerID] == State.busy and client.state[enemyID] == State.busy:
+            if drawObstacleMultiplayer():
+                return
+
+        players[playerID].visualise(False)
+        win.blit(bg[playerID], (0, offset[playerID]))
+
+        for i in range(2):
+            # partition
+            pygame.draw.line(win, WHITE, (0, offset[i]), (WIDTH, offset[i]), 3)
+
+        pygame.display.flip()
 
 
 welcome()
