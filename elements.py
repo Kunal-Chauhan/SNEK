@@ -250,7 +250,13 @@ class Grid:
 
     def __call__(self, *args, **kwargs):
         grid = tuple([tuple([self.grid[i][j]() for j in range(self.columns)]) for i in range(self.rows)])
-        info = {"grid": grid, "walls": self.walls, "snake": self.snakeBody}
+        info = {
+            "grid": grid,
+            "walls": self.walls,
+            "snake": self.snakeBody,
+            "start": self.start.position,
+            "end": self.end.position
+        }
         return info
 
     @property

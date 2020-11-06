@@ -76,28 +76,29 @@ def redrawWindow(surface, grid=None):
     if grid:
         grid.visualise()
         snek.draw(surface)
-        snack.draw(surface)
+        snac.draw(surface)
     else:
         surface.fill(PINK)
         snek.draw(surface)
-        snack.draw(surface)
+        snac.draw(surface)
         drawGrid(WIDTH, ROWS, surface)
 
     pygame.display.update()
 
 
-def randomSnack(rows, item, walls=()):
-    positions = [i.pos for i in item.body] + list(walls)
+def randomPoint(rows=ROWS, cols=COLUMNS, snake=None, walls=()):
+    positions = [i.pos for i in snake.body] if snake else []
+    positions += list(walls)
 
     while True:
-        x = random.randrange(rows)
+        x = random.randrange(cols)
         y = random.randrange(rows)
         if len(list(filter(lambda z: z == (x, y), positions))) > 0:
             continue
         else:
             break
 
-    return tuple([x, y])
+    return x, y
 
 
 def message_box(subject, content):
@@ -119,8 +120,8 @@ def text_on_screen(text, colour, x, y):
     win.blit(screen_text, (x, y))
 
 
-snek = Snake(DARK_BLUE, (10, 10))
-snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
+snek = Snake(DARK_BLUE, randomPoint())
+snac = Cube(randomPoint(snake=snek), cubeColor=RED)
 
 
 def welcome():
@@ -196,7 +197,7 @@ def goToMainMenu(key):
 
 
 def main():
-    global snek, snack, ZEN_MODE
+    global snek, snac, ZEN_MODE
 
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
@@ -222,9 +223,9 @@ def main():
         else:
             flag = True
 
-        if snek.body[0].pos == snack.pos:
+        if snek.body[0].pos == snac.pos:
             snek.addCube()
-            snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
+            snac = Cube(randomPoint(ROWS, snek), cubeColor=RED)
 
         if ZEN_MODE:
             for x in range(len(snek.body)):
@@ -262,12 +263,9 @@ def main():
 def CPU():
     # noinspection SpellCheckingInspection
     pygame.mixer.music.load('Popsoundeffectbottle.ogg')
-    global snek, snack
+    global snek, snac
 
-    snek = Snake(DARK_BLUE, (10, 10))
-    snack = Cube(randomSnack(ROWS, snek), cubeColor=RED)
-
-    grid = Grid(win, (10, 10), snack.pos)
+    grid = Grid(win, snek.head.pos, snac.pos)
 
     if drawObstacle(grid) is None:
         return
@@ -286,15 +284,15 @@ def CPU():
                     if goToMainMenu(event.key):
                         return
 
-            if snek.head.pos == snack.pos:
+            if snek.head.pos == snac.pos:
                 snek.addCube()
-                snack = Cube(randomSnack(ROWS, snek, grid.walls), cubeColor=RED)
-                grid.reset(snek.head.pos, snack.pos, snek, True)
+                snac = Cube(randomPoint(snake=snek, walls=grid.walls), cubeColor=RED)
+                grid.reset(snek.head.pos, snac.pos, snek, True)
             redrawWindow(win, grid)
 
 
 def algoHandling():
-    grid = Grid(win, (0, 0), (ROWS // 2, COLUMNS // 2))
+    grid = Grid(win)
 
     while True:
         key = drawObstacle(grid)
@@ -325,10 +323,15 @@ def algoHandling():
 
 
 def multiplayer():
+    global snek, snac
+    start = randomPoint(rows=ROWS // 2, snake=snek)
+    end = randomPoint(rows=ROWS // 2, snake=snek, walls=(start,))
+
     surface = pygame.Surface((WIDTH, HEIGHT // 2))
     size: tuple[int, int] = surface.get_size()
-    bg = surface.copy(), surface.copy()
-    players = Grid(bg[0], columns=ROWS//2), Grid(bg[1], columns=ROWS//2)
+
+    bg = surface, surface.copy()
+    players = Grid(bg[0], start, end, columns=ROWS // 2), Grid(bg[1], start, end, columns=ROWS // 2)
 
     for surf in bg:
         surf.set_alpha(180)
@@ -362,6 +365,18 @@ def multiplayer():
 
             players[enemyID].snakeBody = client.players[enemyID]["snake"]
             players[enemyID].walls = client.players[enemyID]["walls"]
+
+    client.updatePlayers()
+    start = client.players[enemyID]["start"]
+    end = client.players[enemyID]["end"]
+
+    for player in players:
+        player.end = player.grid[end[0]][end[1]]
+        player.start.visited = False
+        player.queue.pop()
+        player.start = player.grid[start[0]][start[1]]
+        player.start.visited = True
+        player.queue.append(player.start)
 
     thread = threading.Thread(target=fetchData)
     thread.daemon = True

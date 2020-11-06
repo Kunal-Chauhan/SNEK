@@ -6,8 +6,11 @@ class SNEKClient(Client):
     def __init__(self, players: list[Type.Grid]):
         super(SNEKClient, self).__init__()
         self.players = players
-        self.playerID, self.gameID = self.requestServer((State.init, players[0]))
+
+        (self.playerID, self.gameID), (start, end) = self.requestServer((State.init, players[0]))
         self.enemyID = (self.playerID+1) % 2
+        for player in players:
+            player["start"], player["end"] = start, end
 
         # the following represents the states of both the players in the game
         # state = (<player1 state>, <player2 state>)

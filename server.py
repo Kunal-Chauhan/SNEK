@@ -25,14 +25,15 @@ class SNEKServer(Server):
             self.games[self.count][1][0] = State.busy
             self.serverState.set(State.ready)
 
+        start, end = self.games[self.count][0][1]["start"], self.games[self.count][0][1]["end"]
         # NOTE:
         # here lastPlayer is not actually the index of last player but the current player
         # because it has been updated in the above if-else block
-        return self.lastPlayer, self.count
+        return (self.lastPlayer, self.count), (start, end)
 
     # here, data: tuple[(playerID, gameID), State, player_grid]
     def processData(self, data, addr: tuple[str, int]) -> Type.Basic:
-        if data[0] == State.init:
+        if data[-2] == State.init:
             return self.assignGame(data[-1])
         else:
             playerID = data[0][0]
