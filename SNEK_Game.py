@@ -243,7 +243,6 @@ def CPU():
 
     while True:
         if aStar(grid, visualisePath=False, visualiseEnd=False) != False:
-            print(snek.head.pos[0], snek.head.pos[1])
             path = tuple(spot.position for spot in grid.path)
 
             for p in path:
@@ -265,28 +264,23 @@ def CPU():
                 redrawWindow(win, grid)
 
         else:
-            print("dance")
             x = snek.head.pos[0]
             y = snek.head.pos[1]
             clock.tick(50)
 
             if (x+1 < COLUMNS) and ((x+1, y) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
-                print("a")
                 snek.moveTo((x+1, y))
                 grid.reset(snek.head.pos, snack.pos, snek, True)
 
             elif (x-1 > -1) and ((x-1, y) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
-                print("b")
                 snek.moveTo((x-1, y))
                 grid.reset(snek.head.pos, snack.pos, snek, True)
 
             elif (y+1 < ROWS) and ((x, y+1) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
-                print("c")
                 snek.moveTo((x, y+1))
                 grid.reset(snek.head.pos, snack.pos, snek, True)
 
             elif (y-1 > -1) and ((x, y-1) not in grid.snakeBody) and ((x+1, y) not in grid.walls):
-                print("d")
                 snek.moveTo((x, y-1))
                 grid.reset(snek.head.pos, snack.pos, snek, True)
 
