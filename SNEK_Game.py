@@ -31,7 +31,7 @@ def drawGrid(w, rows, surface):
         pygame.draw.line(surface, WHITE, (0, y), (w, y), 1)
 
 
-def _drawObstacle(grid, weight):
+def _drawObstacle(grid, weight, startEndEditable=True):
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -47,10 +47,11 @@ def _drawObstacle(grid, weight):
 
             if K_0 <= event.key <= K_9:
                 weight = event.key - K_0
-            elif event.key == K_s:
-                weight = -1
-            elif event.key == K_e:
-                weight = -2
+            elif startEndEditable:
+                if event.key == K_s:
+                    weight = -1
+                elif event.key == K_e:
+                    weight = -2
             else:
                 return event.key
 
@@ -349,7 +350,7 @@ def multiplayer():
     def drawObstacleMultiplayer():
         nonlocal weight
 
-        x = _drawObstacle(players[playerID], weight)
+        x = _drawObstacle(players[playerID], weight, startEndEditable=False)
         if x is None:
             return 0
         elif -2 <= x <= 9:
