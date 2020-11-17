@@ -47,11 +47,10 @@ def _drawObstacle(grid, weight, startEndEditable=True):
 
             if K_0 <= event.key <= K_9:
                 weight = event.key - K_0
-            elif startEndEditable:
-                if event.key == K_s:
-                    weight = -1
-                elif event.key == K_e:
-                    weight = -2
+            elif event.key == K_s and startEndEditable:
+                weight = -1
+            elif event.key == K_e and startEndEditable:
+                weight = -2
             else:
                 return event.key
 
