@@ -1,13 +1,15 @@
 from network import Client
 from constants import State, Type
+from typing import Union, Tuple, List, Dict
 
 
 class SNEKClient(Client):
-    def __init__(self, players: list[Type.Grid]):
+    def __init__(self, players: List[Type.Grid]):
         super(SNEKClient, self).__init__()
         self.players = players
 
-        (self.playerID, self.gameID), (start, end) = self.requestServer((State.init, players[0]))
+        (self.playerID, self.gameID), (start,
+                                       end) = self.requestServer((State.init, players[0]))
         self.enemyID = (self.playerID+1) % 2
         for player in players:
             player["start"], player["end"] = start, end
@@ -17,10 +19,12 @@ class SNEKClient(Client):
         # for info about each state look up State class in constants.py
         self.state: tuple[State, State] = State(), State()
         self.state[0].set(State.busy)
-        self.state[1].set(State.busy) if self.playerID == 1 else self.state[1].set(State.waiting)
+        self.state[1].set(
+            State.busy) if self.playerID == 1 else self.state[1].set(State.waiting)
 
     def updatePlayers(self):
-        packet = ((self.playerID, self.gameID), self.state[self.playerID].current, self.players[self.playerID])
+        packet = ((self.playerID, self.gameID),
+                  self.state[self.playerID].current, self.players[self.playerID])
         msg = self.requestServer(packet)
         if msg:
             state, self.players[self.enemyID] = msg

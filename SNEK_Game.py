@@ -225,7 +225,7 @@ def main():
 
         if snek.body[0].pos == snac.pos:
             snek.addCube()
-            snac = Cube(randomPoint(ROWS, snek), cubeColor=RED)
+            snac = Cube(randomPoint(snake=snek), cubeColor=RED)
 
         if ZEN_MODE:
             for x in range(len(snek.body)):
@@ -286,7 +286,8 @@ def CPU():
 
             if snek.head.pos == snac.pos:
                 snek.addCube()
-                snac = Cube(randomPoint(snake=snek, walls=grid.walls), cubeColor=RED)
+                snac = Cube(randomPoint(
+                    snake=snek, walls=grid.walls), cubeColor=RED)
                 grid.reset(snek.head.pos, snac.pos, snek, True)
             redrawWindow(win, grid)
 
@@ -331,7 +332,8 @@ def multiplayer():
     size: tuple[int, int] = surface.get_size()
 
     bg = surface, surface.copy()
-    players = Grid(bg[0], start, end, columns=ROWS // 2), Grid(bg[1], start, end, columns=ROWS // 2)
+    players = Grid(bg[0], start, end, columns=ROWS //
+                   2), Grid(bg[1], start, end, columns=ROWS // 2)
 
     for surf in bg:
         surf.set_alpha(180)
@@ -387,7 +389,8 @@ def multiplayer():
 
         if client.state[enemyID] != State.run:
             win.blit(bg[enemyID], (0, offset[enemyID]))
-            text_on_screen(str(client.state[enemyID]), PINK, None, 150 + offset[enemyID])
+            text_on_screen(
+                str(client.state[enemyID]), PINK, None, 150 + offset[enemyID])
 
         if client.state[playerID] == State.busy and client.state[enemyID] == State.busy:
             if drawObstacleMultiplayer():
