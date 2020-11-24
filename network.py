@@ -3,6 +3,7 @@ import threading
 import traceback
 import json
 from constants import Type
+from typing import Union, Tuple, List, Dict
 
 
 class Network:
@@ -30,7 +31,7 @@ class Server(Network):
         self.sock.bind(self.address)
         self.lock = threading.Lock()
 
-    def processData(self, data, addr: tuple[str, int]) -> Type.Basic:
+    def processData(self, data, addr: Tuple[str, int]) -> Type.Basic:
         # override this function in the child class.
         # data - msg received from client
         # addr - (host, port)
@@ -63,7 +64,8 @@ class Server(Network):
             while True:
                 data, addr = self.sock.recvfrom(self.header)
 
-                thread = threading.Thread(target=self._handleClient, args=(data, addr))
+                thread = threading.Thread(
+                    target=self._handleClient, args=(data, addr))
                 thread.daemon = True
                 thread.start()
         except KeyboardInterrupt:

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple, List, Dict
 
 
 # Colours
@@ -63,5 +63,5 @@ class State:
 class Type:
     Signal = int
     Basic = Union[bool, tuple, int, str, list, dict]
-    Grid = dict[str, Union[tuple, list]]
-    Packet = tuple[tuple[int, int], Signal, Grid]
+    Grid = Dict[str, Union[Tuple, List]]
+    Packet = Tuple[Tuple[int, int], Signal, Grid]
