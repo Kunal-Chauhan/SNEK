@@ -45,7 +45,7 @@ def DFS_BFS(G, index, visualisePath=False, visualiseEnd=False):
 
 
 def aStar(G, visualisePath=False, visualiseEnd=False):
-    heuristics = lambda a, b: abs(a.x - b.x) + abs(a.y - b.y)
+    def heuristics(a, b): return abs(a.x - b.x) + abs(a.y - b.y)
 
     queue = G.queue
     path = G.path
@@ -102,9 +102,11 @@ def aStar(G, visualisePath=False, visualiseEnd=False):
                     neighbor.prev = current
 
         else:
+            return False
+            """
             if sys.platform != 'darwin':
                 Tk().wm_withdraw()
                 messagebox.showinfo("No Solution", "There was no solution")
-            break
+            break"""
 
         G.visualise() if visualisePath else ...
