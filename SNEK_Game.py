@@ -1,10 +1,11 @@
 import random
 import tkinter as tk
 from constants import *
-from elements import Snake, Cube, Grid
+from elements import Snake, Cube, Grid, Multiplayer
 from algorithms import *
-from client import SNEKClient
 import threading
+from typing import Tuple
+import PySimpleGUI as sg
 
 # For Zen Mode
 ZEN_MODE = False
@@ -37,9 +38,9 @@ def _drawObstacle(grid, weight, startEndEditable=True):
             pygame.quit()
             sys.exit()
         if event.type == MOUSEMOTION or event.type == MOUSEBUTTONDOWN:
-            if pygame.mouse.get_pressed()[0]:
+            if pygame.mouse.get_pressed(3)[0]:
                 grid.clickWall(pygame.mouse.get_pos(), weight)
-            if pygame.mouse.get_pressed()[2]:
+            if pygame.mouse.get_pressed(3)[2]:
                 grid.clickWall(pygame.mouse.get_pos())
         if event.type == KEYDOWN:
             if goToMainMenu(event.key):
@@ -225,7 +226,7 @@ def main():
 
         if snek.body[0].pos == snac.pos:
             snek.addCube()
-            snac = Cube(randomPoint(snake=snek), cubeColor=RED)
+            snac = Cube(randomPoint(ROWS, snake=snek), cubeColor=RED)
 
         if ZEN_MODE:
             for x in range(len(snek.body)):
@@ -286,8 +287,7 @@ def CPU():
 
             if snek.head.pos == snac.pos:
                 snek.addCube()
-                snac = Cube(randomPoint(
-                    snake=snek, walls=grid.walls), cubeColor=RED)
+                snac = Cube(randomPoint(snake=snek, walls=grid.walls), cubeColor=RED)
                 grid.reset(snek.head.pos, snac.pos, snek, True)
             redrawWindow(win, grid)
 
@@ -324,24 +324,22 @@ def algoHandling():
 
 
 def multiplayer():
-    global snek, snac
     start = randomPoint(rows=ROWS // 2, snake=snek)
     end = randomPoint(rows=ROWS // 2, snake=snek, walls=(start,))
 
     surface = pygame.Surface((WIDTH, HEIGHT // 2))
-    size: tuple[int, int] = surface.get_size()
+    size: Tuple[int, int] = surface.get_size()
 
     bg = surface, surface.copy()
-    players = Grid(bg[0], start, end, columns=ROWS //
-                   2), Grid(bg[1], start, end, columns=ROWS // 2)
+    players = Grid(bg[0], start, end, columns=ROWS // 2), Grid(bg[1], start, end, columns=ROWS // 2)
 
     for surf in bg:
         surf.set_alpha(180)
         surf.fill(DARK_BLUE)
 
-    client = SNEKClient([players[0](), players[1]()])
+    client = Multiplayer([players[0](), players[1]()])
     playerID: int = client.playerID
-    enemyID = (playerID+1) % 2
+    enemyID = (playerID + 1) % 2
 
     # this array will decide the Y position of grid for every (in our case, two) player
     offset = 0, size[1]
@@ -351,22 +349,33 @@ def multiplayer():
     def drawObstacleMultiplayer():
         nonlocal weight
 
-        x = _drawObstacle(players[playerID], weight, startEndEditable=False)
+        x = _drawObstacle(players[enemyID], weight, startEndEditable=False)
         if x is None:
             return 0
         elif -2 <= x <= 9:
             weight = x
+        elif x == K_r:
+            client.state[playerID].set(State.ready)
+            aStar(players[enemyID], visualisePath=False, visualiseEnd=False)
 
     def fetchData():
         while True:
-            client.updatePlayers()
-            grid = client.players[enemyID]["grid"]
-            for m, spots in enumerate(players[enemyID].grid):
-                for n, spot in enumerate(spots):
-                    spot.weight = grid[m][n]
+            clock.tick(1)
+            client.players[enemyID] = players[enemyID]()
 
-            players[enemyID].snakeBody = client.players[enemyID]["snake"]
-            players[enemyID].walls = client.players[enemyID]["walls"]
+            isReady = client.updatePlayers()
+
+            grid = client.players[playerID]["grid"]
+            for m, spots in enumerate(players[playerID].grid):
+                for n, spot in enumerate(spots):
+                    w = spot.weight = grid[m][n]
+                    spot.wall = (w == 0)
+
+            players[playerID].snakeBody = client.players[playerID]["snake"]
+            players[playerID].walls = client.players[playerID]["walls"]
+
+            if isReady:
+                aStar(players[playerID], visualisePath=False, visualiseEnd=False)
 
     client.updatePlayers()
     start = client.players[enemyID]["start"]
@@ -384,20 +393,50 @@ def multiplayer():
     thread.daemon = True
     thread.start()
 
+    def run():
+        a = len(players[0].path)
+        b = len(players[1].path)
+
+        x = a if a > b else b
+
+        for _ in range(x):
+            clock.tick(10)
+
+            for k, snake in enumerate(client.snakes):
+                players[k].visualise(updateScreen=False)
+
+                if players[k].path:
+                    snake.moveTo(players[k].path[0].position)
+                    players[k].path.pop(0)
+
+                snake.draw(bg[k])
+                win.blit(bg[k], (0, offset[k]))
+
+            pygame.display.flip()
+
     while True:
         win.fill(PINK)
 
-        if client.state[enemyID] != State.run:
-            win.blit(bg[enemyID], (0, offset[enemyID]))
-            text_on_screen(
-                str(client.state[enemyID]), PINK, None, 150 + offset[enemyID])
+        win.blit(bg[playerID], (0, offset[playerID]))
+        text_on_screen(str(client.state[enemyID]), PINK, None, 150 + offset[playerID])
 
-        if client.state[playerID] == State.busy and client.state[enemyID] == State.busy:
+        if client.state[playerID] == State.busy or client.state[enemyID] == State.busy:
             if drawObstacleMultiplayer():
                 return
 
-        players[playerID].visualise(False)
-        win.blit(bg[playerID], (0, offset[playerID]))
+        if client.state[playerID] == State.ready and client.state[enemyID] == State.ready:
+            run()
+
+            sg.PopupOK("someone won")
+
+            for surf in bg:
+                surf.set_alpha(180)
+                surf.fill(DARK_BLUE)
+
+            [s.set(State.busy) for s in client.state]
+        else:
+            players[enemyID].visualise(False)
+            win.blit(bg[enemyID], (0, offset[enemyID]))
 
         for i in range(2):
             # partition

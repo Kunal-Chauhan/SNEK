@@ -12,6 +12,7 @@ LIGHT_BLUE = (187, 225, 250)
 GREEN = (39, 174, 96)
 GOLDEN = (255, 224, 93)
 CREAM = (255, 248, 205)
+
 # Screen
 WIDTH, HEIGHT = 700, 700
 SIZE = (WIDTH, HEIGHT)
@@ -51,6 +52,8 @@ class State:
             return "Player is done!"
         elif self.current == State.busy:
             return "Player is drawing!"
+        else:
+            return "<str not set>"
 
     def set(self, state: int):
         if state < State._noOfStates:

@@ -1,18 +1,18 @@
 from network import Server
-from constants import State, Type
+from constants import State, Type, Union, List, Dict, Tuple
 
 
 class SNEKServer(Server):
     def __init__(self):
         super(SNEKServer, self).__init__()
-        self.games: dict[int, list[list[int, Type.Grid]]] = {}
+        # {GameID: [ [State_player1, grid_player2], [State_player2, Grid_player1] ]}
+        self.games: Dict[int, List[List[Union[Type.Grid]]]] = {}
         self.count = 0
         self.lastPlayer = 0
         self.serverState: State = State()
         self.serverState.set(State.ready)
 
     def assignGame(self, data: Type.Grid):
-
         if self.serverState.current == State.ready:
             self.lastPlayer = 0
             self.count += 1
@@ -31,13 +31,12 @@ class SNEKServer(Server):
         # because it has been updated in the above if-else block
         return (self.lastPlayer, self.count), (start, end)
 
-    # here, data: tuple[(playerID, gameID), State, player_grid]
-    def processData(self, data, addr: tuple[str, int]) -> Type.Basic:
+    # here, data: tuple[(playerID, gameID), State, enemy_grid]
+    def processData(self, data, addr: Tuple[str, int]) -> Type.Basic:
         if data[-2] == State.init:
             return self.assignGame(data[-1])
         else:
-            playerID = data[0][0]
-            gameID = data[0][1]
+            playerID, gameID = data[0]
             self.games[gameID][playerID] = data[1], data[-1]
 
             return self.games[gameID][(playerID+1) % 2]

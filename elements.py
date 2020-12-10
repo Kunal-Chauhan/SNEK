@@ -2,6 +2,7 @@ import pygame
 import sys
 from pygame.locals import *
 from constants import *
+from client import SNEKClient
 
 
 class Cube:
@@ -116,10 +117,10 @@ class Snake:
         x, y = point
         dirX = self.dirX = x - self.head.x
         dirY = self.dirY = y - self.head.y
-        self.turns[self.head.pos[:]] = [dirX, dirY]
+        self.turns[tuple(self.head.pos[:])] = [dirX, dirY]
 
         for i, c in enumerate(self.body):
-            p = c.pos[:]
+            p = tuple(c.pos[:])
             if p in self.turns:
                 turn = self.turns[p]
                 c.move(*turn)
@@ -181,7 +182,7 @@ class Spot:
         return self.weight
 
     def __repr__(self):
-        return f'{self.x, self.y}, w: {self.weight}, v: {self.visited}'
+        return f'{self.x, self.y}, w: {self.weight}'
 
     @property
     def position(self):
@@ -237,9 +238,11 @@ class Grid:
         self.queue = []  # set of open nodes
         self.visited = []  # set of visited nodes
         self.path = []  # shortest path nodes
-        self.grid: list[list[Spot]] = []  # all nodes in the grid
+        self.grid: List[List[Spot]] = []  # all nodes in the grid
         self.snakeBody = []  # for making snake body as walls in CPU mode
         self.walls = []     # spots with infinite weight
+
+        self.weightLimit = -1
 
         self.start: Spot = start
         self.end: Spot = end
@@ -290,12 +293,11 @@ class Grid:
             startX, startY = start
             self.start = grid[startX][startY]
             self.start.visited = True
+            queue.append(self.start)
 
         if end:
             endX, endY = end
             self.end = grid[endX][endY]
-
-        queue.append(self.start)
 
     def reset(self, start=None, end=None, obstacles=None, retainWeights=False, retainWalls=False):
         self.visited = []
@@ -352,6 +354,7 @@ class Grid:
         i = pos[0] // W
         j = (pos[1] - self.offset) // H
 
+        # if j < 0 or self.weightLimit == -1
         if j < 0:
             return
 
@@ -365,11 +368,26 @@ class Grid:
                 self.start = self.grid[i][j]
                 self.start.visited = True
                 self.queue.append(self.start)
-            elif weight == 0:
-                self.grid[i][j].wall = True
-                self.walls.append((i, j))
             else:
-                self.grid[i][j].wall = False
+                if weight == 0:
+                    if not self.grid[i][j].wall:
+                        self.grid[i][j].wall = True
+                        self.walls.append((i, j))
+                elif self.grid[i][j].wall:
+                    self.grid[i][j].wall = False
+                    self.walls.remove((i, j))
                 self.grid[i][j].weight = weight
         except IndexError:
             pass
+
+
+class Multiplayer(SNEKClient):
+    def __init__(self, players):
+        super(Multiplayer, self).__init__(players)
+        self.hp = 20
+        self.distance = 0
+        self.snakes: Tuple[Snake, ...] = tuple([Snake(GREEN, player["start"]) for player in players])
+        self.snacks = tuple([Cube(player["end"], cubeColor=RED) for player in players])
+
+    def run(self):
+        pass

@@ -3,7 +3,7 @@ import threading
 import traceback
 import json
 from constants import Type
-from typing import Union, Tuple, List, Dict
+from typing import Tuple
 
 
 class Network:
