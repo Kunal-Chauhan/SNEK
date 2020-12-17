@@ -1,5 +1,4 @@
 import random
-import tkinter as tk
 from constants import *
 from elements import Snake, Cube, Grid, Multiplayer
 from algorithms import *
@@ -10,13 +9,19 @@ import PySimpleGUI as sg
 # For Zen Mode
 ZEN_MODE = False
 
+# important for macOS, DO NOT DELETE!
+layout = [[sg.Text("game is loading")]]
+window = sg.Window("hi", layout, keep_on_top=True, finalize=True)
+window.refresh()
+
 pygame.init()
-pygame.mixer.init()
 
 win: pygame.SurfaceType = pygame.display.set_mode((WIDTH, WIDTH))
 pygame.display.set_caption("SNEK Game")
 clock = pygame.time.Clock()
 font = pygame.font.SysFont(pygame.font.get_default_font(), 55)
+
+window.close()
 
 
 def drawGrid(w, rows, surface):
@@ -100,19 +105,6 @@ def randomPoint(rows=ROWS, cols=COLUMNS, snake=None, walls=()):
             break
 
     return x, y
-
-
-def message_box(subject, content):
-    try:
-        root = tk.Tk()
-        root.attributes("-topmost", True)
-        root.withdraw()
-        messagebox.showinfo(subject, content)
-        root.destroy()
-    except tk.TclError as e:
-        print("(tkinter), ", e)
-    except Exception as e:
-        print(e)
 
 
 def text_on_screen(text, colour, x, y):
@@ -251,8 +243,8 @@ def main():
                             if event.key == K_RETURN:
                                 main()
 
-                    if sys.platform != 'darwin':
-                        message_box('You Lost!', 'Play again...')
+                    sg.PopupOK(f"Score: {len(snek.body)}", title="You lost!")
+
                     print("You LOST!")
 
                     snek.reset((10, 10))
@@ -426,8 +418,6 @@ def multiplayer():
 
         if client.state[playerID] == State.ready and client.state[enemyID] == State.ready:
             run()
-
-            sg.PopupOK("someone won")
 
             for surf in bg:
                 surf.set_alpha(180)

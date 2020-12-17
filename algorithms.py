@@ -1,7 +1,7 @@
 import pygame
 import sys
 from pygame.locals import *
-from tkinter import messagebox, Tk
+from PySimpleGUI import Popup
 
 
 def DFS_BFS(G, index, visualisePath=False, visualiseEnd=False):
@@ -35,9 +35,7 @@ def DFS_BFS(G, index, visualisePath=False, visualiseEnd=False):
                     i.prev = current
                     queue.append(i)
         else:
-            if sys.platform != 'darwin':
-                Tk().wm_withdraw()
-                messagebox.showinfo("No Solution", "There was no solution")
+            Popup("No Solution Found", title='')
             print("no solution")
             break
 
@@ -102,9 +100,7 @@ def aStar(G, visualisePath=False, visualiseEnd=False):
                     neighbor.prev = current
 
         else:
-            if sys.platform != 'darwin':
-                Tk().wm_withdraw()
-                messagebox.showinfo("No Solution", "There was no solution")
+            Popup("No Solution Found", title='')
             break
 
         G.visualise() if visualisePath else ...
